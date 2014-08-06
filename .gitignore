@@ -7,3 +7,5 @@ uWebKit/Assets/StreamingAssets/uWebKit/Mac/x86*
 uWebKit/Assets/StreamingAssets/uWebKit/Mac/x86_64*
 uWebKit/Assets/StreamingAssets/uWebKit/Windows/x86*
 uWebKit/Assets/StreamingAssets/uWebKit/Windows/x86_64*
+Makefile
+*.stash
