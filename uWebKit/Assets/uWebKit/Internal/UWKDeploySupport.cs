@@ -8,77 +8,96 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
- 
+
 public static class UWKDeploySupport
 {
-    static void removePaths(List<string> paths)
+    static void RemovePaths(List<string> paths)
     {
-    	foreach (var _path in paths)
-    	{
-    		string path = _path;
-
-    		if (Application.platform != RuntimePlatform.OSXEditor)
-    			path = path.Replace("/", "\\");
-    		
-    		if (Directory.Exists(path))
-    			Directory.Delete(path, true);
-
-    		if (Directory.Exists(path))
-    			Debug.LogError("Unable to remove deployment path: " + path);
-
-    	}
-
+        foreach (var _path in paths)
+        {
+            string path = _path;
+            
+            if (Application.platform != RuntimePlatform.OSXEditor)
+                path = path.Replace("/", "\\");
+            
+            if (!Directory.Exists(path))
+                Debug.LogError("Unable to remove deployment path: " + path);
+            
+            if (Directory.Exists(path))
+                Directory.Delete(path, true);
+            
+            if (Directory.Exists(path))
+                Debug.LogError("Unable to remove deployment path: " + path);    
+        }
     }
- 
+    
     [PostProcessBuild] 
     public static void OnPostProcessBuild(BuildTarget target, string path)
     {
+        if (path.Contains(".exe"))
+            path = path.Replace(".exe", "_Data");
+        
+        bool windowsBuild = target == BuildTarget.StandaloneWindows || target == BuildTarget.StandaloneWindows64;
+        bool linuxBuild = target == BuildTarget.StandaloneLinux || target == BuildTarget.StandaloneLinux64 || target == BuildTarget.StandaloneLinuxUniversal;
+        bool osxBuild = target == BuildTarget.StandaloneOSXIntel || target == BuildTarget.StandaloneOSXIntel64 || target == BuildTarget.StandaloneOSXUniversal;
+        bool iosBuild = target == BuildTarget.iPhone;
 
-    	if (path.Contains(".exe"))
-    		path = path.Replace(".exe", "_Data");
-
-		// osx deployment removal
-    	List<string> osxDeploy = new List<string>();
-
-    	// windows deployment removal
-    	List<string> winDeploy = new List<string>();
-
-    	bool windowsBuild = target == BuildTarget.StandaloneWindows || target == BuildTarget.StandaloneWindows64;
-
-		osxDeploy.Add(path + "/Contents/Data/StreamingAssets/uWebKit/Mac/x86");
-		osxDeploy.Add(path + "/Contents/Data/StreamingAssets/uWebKit/Mac/x86_64");
-		osxDeploy.Add(path + "/Contents/Data/StreamingAssets/uWebKit/Windows/x86");
-		osxDeploy.Add(path + "/Contents/Data/StreamingAssets/uWebKit/Windows/x86_64");
-
-		winDeploy.Add(path + "/StreamingAssets/uWebKit/Mac/x86");
-		winDeploy.Add(path + "/StreamingAssets/uWebKit/Mac/x86_64");
-		winDeploy.Add(path + "/StreamingAssets/uWebKit/Windows/x86");
-		winDeploy.Add(path + "/StreamingAssets/uWebKit/Windows/x86_64");
-
-    	if (target == BuildTarget.StandaloneWindows)
-    	{
-    		winDeploy.Remove(path + "/StreamingAssets/uWebKit/Windows/x86");
-    	}
-    	else if (target == BuildTarget.StandaloneWindows64)
-    	{
-    		winDeploy.Remove(path + "/StreamingAssets/uWebKit/Windows/x86_64");
-    	}
-    	else if (target == BuildTarget.StandaloneOSXIntel)
-    	{
-    		osxDeploy.Remove(path + "/Contents/Data/StreamingAssets/uWebKit/Mac/x86");
-    	}
-    	else if (target == BuildTarget.StandaloneOSXIntel64)
-    	{	
-    		osxDeploy.Remove(path + "/Contents/Data/StreamingAssets/uWebKit/Mac/x86_64");
-    	}
-
-		if (windowsBuild)
-			removePaths(winDeploy);
-		else
-			removePaths(osxDeploy);
-
+        // build the target-specific streaming asset directories used for deployment
+        List<string> assetDirectories = new List<string>()
+        {
+            "uWebKit/Mac/x86",
+            "uWebKit/Mac/x86_64",
+            "uWebKit/Windows/x86",
+            "uWebKit/Windows/x86_64"
+        };
+        
+        string assetDirectoryPrefix = string.Empty;
+        
+        if (windowsBuild || linuxBuild)
+        {
+            assetDirectoryPrefix = path + "/StreamingAssets/";
+        }
+        else if (osxBuild)
+        {
+            assetDirectoryPrefix = path + "/Contents/Data/StreamingAssets/";
+        }
+        else if (iosBuild)
+        {
+            assetDirectoryPrefix = path + "/Data/Raw/";
+        }
+        else
+        {
+            // log an error but at least allow compiling to continue by preventing further errors
+            Debug.LogError("Unable to remove deployment paths for uWebKit on this platform");
+            return;
+        }
+        
+        List<string> deployPathsToDelete = new List<string>();
+        foreach (string assetDirectory in assetDirectories)
+        {
+            deployPathsToDelete.Add(assetDirectoryPrefix + assetDirectory);
+        }
+        
+        // protect the directory for the current target by removing it from the deletion list
+        if (target == BuildTarget.StandaloneWindows)
+        {
+            deployPathsToDelete.Remove(path + "/StreamingAssets/uWebKit/Windows/x86");
+        }
+        else if (target == BuildTarget.StandaloneWindows64)
+        {
+            deployPathsToDelete.Remove(path + "/StreamingAssets/uWebKit/Windows/x86_64");
+        }
+        else if (target == BuildTarget.StandaloneOSXIntel)
+        {
+            deployPathsToDelete.Remove(path + "/Contents/Data/StreamingAssets/uWebKit/Mac/x86");
+        }
+        else if (target == BuildTarget.StandaloneOSXIntel64)
+        {   
+            deployPathsToDelete.Remove(path + "/Contents/Data/StreamingAssets/uWebKit/Mac/x86_64");
+        }
+        
+        RemovePaths(deployPathsToDelete);
     }
-
 }
 
 #endif 
