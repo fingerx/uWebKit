@@ -635,7 +635,7 @@ public class UWKWebView : MonoBehaviour
             format = TextureFormat.BGRA32;
         }
 
-        WebTexture = new Texture2D( MaxWidth, MaxHeight, format, true);
+        WebTexture = new Texture2D( MaxWidth, MaxHeight, format, false);
 
         Color32[] colors = new Color32[MaxWidth * MaxHeight];
 
