@@ -317,6 +317,10 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
             hide();
         }
     }
+    else if (msg.type == UMSG_VIEW_RELOAD)
+    {
+        reload();
+    }
     else if (msg.type == UMSG_VIEW_SETALPHAMASK)
     {
         if (msg.iParams[0])

@@ -348,6 +348,14 @@ public class UWKWebView : MonoBehaviour
     }
 
     /// <summary>
+    /// Reloads the current page contents
+    /// </summary>
+    public void Reload ()
+    {
+        UWKPlugin.UWK_MsgViewReload(ID);
+    }
+
+    /// <summary>
     /// Sends a Javascript message to the page
     /// </summary>
     public void SendJSMessage(string msgName, Dictionary<string,object> msgValues)
