@@ -1,9 +1,9 @@
 /******************************************
-  * uWebKit 
+  * uWebKit
   * (c) 2014 THUNDERBEAST GAMES, LLC
   * website: http://www.uwebkit.com email: sales@uwebkit.com
   * Usage of this source code requires a uWebKit Source License
-  * Please see UWEBKIT_SOURCE_LICENSE.txt in the root folder 
+  * Please see UWEBKIT_SOURCE_LICENSE.txt in the root folder
   * for details
 *******************************************/
 
@@ -38,10 +38,14 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
     cursorDraw_(true),
     cursorBlinkTime_(QDateTime::currentDateTime()),
     visible_(true),
-    progress_(0)
+    progress_(0),
+    alphaMaskEnabled_(false)
 {
     page_ = new WebPage(this);
     setPage(page_);
+
+    // take a snapshot of the original palette
+    originalPagePalette_ = page_->palette();
 
     buttonState_[0] = false;
     buttonState_[1] = false;
@@ -64,7 +68,7 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
 
     adjustSize(maxWidth, maxHeight);
 
-    // signals    
+    // signals
     connect(page()->mainFrame(), SIGNAL(loadStarted()),
             this, SLOT(loadStarted()));
 
@@ -313,6 +317,17 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
             hide();
         }
     }
+    else if (msg.type == UMSG_VIEW_SETALPHAMASK)
+    {
+        if (msg.iParams[0])
+        {
+            setAlphaMask(true);
+        }
+        else
+        {
+            setAlphaMask(false);
+        }
+    }
     else if (msg.type == UMSG_VIEW_NAVIGATE)
     {
         if (msg.iParams[0] == 0)
@@ -351,7 +366,7 @@ uint32_t WebView::GetGPUSurfaceID()
 
 void WebView::timerEvent(QTimerEvent *event)
 {
-     Q_UNUSED(event);
+    Q_UNUSED(event);
 
     if (!visible_ || progress_ < 50)
         return;
@@ -523,7 +538,7 @@ void WebView::checkIcon()
 void WebView::javaScriptWindowObjectCleared()
 {
     registerIMEHandler();
-    JSBridge::Instance()->AddBridgeToView(this);    
+    JSBridge::Instance()->AddBridgeToView(this);
 }
 
 void WebView::handleSslErrors(QNetworkReply* reply, const QList<QSslError> &errors)
@@ -582,6 +597,27 @@ void WebView::registerIMEHandler()
 
     page()->mainFrame()->evaluateJavaScript(JavascriptEmbedded::GetIMEHandler());
 
+}
+
+void WebView::setAlphaMask(bool enabled)
+{
+    if (alphaMaskEnabled_ == enabled)
+        return;
+
+    if (enabled)
+    {
+        QPalette palette = page_->palette();
+        palette.setBrush(QPalette::Base, Qt::transparent);
+        page_->setPalette(palette);
+        setAttribute(Qt::WA_OpaquePaintEvent, false);
+    }
+    else
+    {
+        page_->setPalette(originalPagePalette_);
+        setAttribute(Qt::WA_OpaquePaintEvent, true);
+    }
+
+    alphaMaskEnabled_ = enabled;
 }
 
 }

@@ -23,6 +23,7 @@ public class WebTexture : MonoBehaviour
     public bool MouseEnabled = true;
     public bool Rotate = false;
     public bool HasFocus = true;
+    public bool AlphaMask = false;
     #endregion
 
     UWKWebView view;
@@ -32,6 +33,8 @@ public class WebTexture : MonoBehaviour
     {   
 
         view = gameObject.GetComponent<UWKWebView>();
+
+        view.SetAlphaMask(AlphaMask);
 
         if (renderer != null)
             renderer.material.mainTexture = view.WebTexture;

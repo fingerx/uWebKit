@@ -352,6 +352,15 @@ void EXPORT_API UWK_MsgLoadURL(uint32_t id, const char* utf8URL)
     UWKMessageQueue::Write(msg);
 }
 
+void EXPORT_API UWK_MsgSetAlphaMask(uint32_t id, bool enabled)
+{
+    UWKMessage msg;
+    msg.type = UMSG_VIEW_SETALPHAMASK;
+    msg.browserID = id;
+    msg.iParams[0] = enabled ? 1 : 0;
+    UWKMessageQueue::Write(msg);
+}
+
 void EXPORT_API UWK_MsgShow(uint32_t id, bool show)
 {
     UWKBrowser* browser = UWKServer::Instance()->GetBrowser(id);

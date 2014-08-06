@@ -288,6 +288,14 @@ public class UWKWebView : MonoBehaviour
     }   
 
     /// <summary>
+    /// Enabled or disables alpha mask rendering of view
+    /// </summary>    
+    public void SetAlphaMask(bool enabled)
+    {
+        UWKPlugin.UWK_MsgSetAlphaMask(ID, enabled);
+    }   
+
+    /// <summary>
     /// Clears all user cookies 
     /// </summary>    
     public static void ClearCookies()
@@ -619,7 +627,7 @@ public class UWKWebView : MonoBehaviour
             format = TextureFormat.BGRA32;
         }
 
-        WebTexture = new Texture2D( MaxWidth, MaxHeight, format, false);
+        WebTexture = new Texture2D( MaxWidth, MaxHeight, format, true);
 
         Color32[] colors = new Color32[MaxWidth * MaxHeight];
 

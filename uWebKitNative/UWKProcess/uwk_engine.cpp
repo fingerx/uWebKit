@@ -186,6 +186,7 @@ void Engine::ProcessUWKMessage(const UWKMessage& msg)
         case UMSG_VIEW_LOADURL:
         case UMSG_VIEW_LOADHTML:
         case UMSG_VIEW_SHOW:
+        case UMSG_VIEW_SETALPHAMASK:
         case UMSG_VIEW_NAVIGATE:
         case UMSG_VIEW_SETCURRENTSIZE:
         case UMSG_VIEW_SETZOOMFACTOR:

@@ -77,12 +77,18 @@ class WebView : public QGraphicsWebView
 
     QBuffer cachedIcon_;
 
+    QPalette originalPagePalette_;
+
+    bool alphaMaskEnabled_;
+
     void checkIcon();
 
     void adjustSize(int width, int height);
 
     void registerIMEHandler();
     void setIME(const QString& ime);
+
+    void setAlphaMask(bool enabled);
 
 #ifdef GITHUB_BUILD
 
@@ -101,7 +107,6 @@ public slots:
     void loadStarted();
     void setProgress( int progress);
     void javaScriptWindowObjectCleared();
-
     void handleFocusIn(QVariant type, QVariant var, QVariant left, QVariant top, QVariant width, QVariant height);
     void handleFocusOut(QVariant var);
 

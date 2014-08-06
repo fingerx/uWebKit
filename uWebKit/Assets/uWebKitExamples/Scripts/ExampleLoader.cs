@@ -22,7 +22,7 @@ public class ExampleLoader : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-		if (Application.levelCount != 6) 
+		if (Application.levelCount != 8) 
 		{	
 			#if UNITY_EDITOR
 			EditorUtility.DisplayDialog ("Example Loader", "This example features dynamic scene loading and thus requires the example scenes (including the ExampleLoader scene) be added to the Build Settings", "Ok");
@@ -98,6 +98,16 @@ public class ExampleLoader : MonoBehaviour
 		brect.y += 80;
 		if (GUI.Button (brect, "Example 5 - Javascript")) {
 			Application.LoadLevel ("Example5Javascript");
+		}
+
+		brect.y += 80;
+		if (GUI.Button (brect, "Example 6 - Facebook")) {
+			Application.LoadLevel ("Example6Facebook");
+		}
+
+		brect.y += 80;
+		if (GUI.Button (brect, "Example 7- Alpha Mask")) {
+			Application.LoadLevel ("Example7AlphaMask");
 		}
 							
 		brect.y += 80;

@@ -155,6 +155,9 @@ public class UWKPlugin
     public static extern uint UWK_MsgShow(uint browserId, bool show = true);
 
     [DllImport ("UWKPlugin")]
+    public static extern uint UWK_MsgSetAlphaMask(uint browserId, bool enabled);    
+
+    [DllImport ("UWKPlugin")]
     public static extern void UWK_MsgSetCurrentSize(uint browserID, int width, int height);
 
     [DllImport ("UWKPlugin")]
@@ -334,6 +337,7 @@ public enum UWKMessageType
     UMSG_VIEW_NAVIGATE,
     UMSG_VIEW_SETZOOMFACTOR,
     UMSG_VIEW_REQUESTNEWVIEW,
+    UMSG_VIEW_SETALPHAMASK,
     UMSG_ASYNC_RESULT,
     UMSG_JAVASCRIPT_CONSOLE,
     UMSG_JAVASCRIPT_MESSAGE,
