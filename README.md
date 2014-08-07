@@ -23,7 +23,7 @@ A robust and easy way to add HTML5 web content to your PC/Mac application.
 
 #### When will it be available?
 
-uWebKit2 is currently in open beta and available for download from Github.  We plan to release the binary version on the Unity Asset Store after the beta period.
+uWebKit2 is currently in open beta.  However, it is stable and being used by many studios in production.  For seat purchasing information, please contact sales@uwebkit.com
 
 #### How much will it cost?
 
@@ -62,7 +62,7 @@ uWebKit2 will be inline with other Unity assets under no-nonsense licenses for b
 
 #### Source Code License
 
-Binary licenses will be sold exclusively on the Unity Asset Store.  If you're interested in a [Source License](https://github.com/uWebKit/uWebKit/blob/uWebKit2-Beta/UWEBKIT_LICENSE_SOURCE.txt) please contact: sales@uwebkit.com   
+If you're interested in a uWebKit2 source license, which allows source customization and redistribution of modified binaries please contact sales@uwebkit.com   
 
 #### Issues
 
