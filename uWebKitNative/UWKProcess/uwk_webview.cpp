@@ -39,7 +39,8 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
     cursorBlinkTime_(QDateTime::currentDateTime()),
     visible_(true),
     progress_(0),
-    alphaMaskEnabled_(false)
+    alphaMaskEnabled_(false),
+    textCaretColor_(0xFF000000)
 {
     page_ = new WebPage(this);
     setPage(page_);
@@ -332,6 +333,10 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
             setAlphaMask(false);
         }
     }
+    else if (msg.type == UMSG_VIEW_SETTEXTCARETCOLOR)
+    {
+        setTextCaretColor((uint32_t) msg.iParams[0]);
+    }
     else if (msg.type == UMSG_VIEW_NAVIGATE)
     {
         if (msg.iParams[0] == 0)
@@ -415,9 +420,8 @@ void WebView::timerEvent(QTimerEvent *event)
 
         if (cursorDraw_ && inputMethodQuery(Qt::ImMaximumTextLength).toInt() > 0)
         {
-            QRect r = inputMethodQuery(Qt::ImMicroFocus).toRect();
-            painter.fillRect(r, 0xFF000000);
-
+            QRect r = inputMethodQuery(Qt::ImCursorRectangle).toRect();
+            painter.fillRect(r, textCaretColor_);
         }
 
         painter.end();

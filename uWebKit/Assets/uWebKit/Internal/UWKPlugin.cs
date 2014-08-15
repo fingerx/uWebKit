@@ -158,7 +158,10 @@ public class UWKPlugin
     public static extern uint UWK_MsgViewReload(uint browserId);    
 
     [DllImport ("UWKPlugin")]
-    public static extern uint UWK_MsgSetAlphaMask(uint browserId, bool enabled);    
+    public static extern uint UWK_MsgSetAlphaMask(uint browserId, bool enabled);  
+
+    [DllImport ("UWKPlugin")]
+    public static extern uint UWK_MsgSetTextCaretColor(uint browserId, uint color);  
 
     [DllImport ("UWKPlugin")]
     public static extern void UWK_MsgSetCurrentSize(uint browserID, int width, int height);
@@ -341,6 +344,7 @@ public enum UWKMessageType
     UMSG_VIEW_SETZOOMFACTOR,
     UMSG_VIEW_REQUESTNEWVIEW,
     UMSG_VIEW_SETALPHAMASK,
+    UMSG_VIEW_SETTEXTCARETCOLOR,
     UMSG_VIEW_RELOAD,
     UMSG_ASYNC_RESULT,
     UMSG_JAVASCRIPT_CONSOLE,

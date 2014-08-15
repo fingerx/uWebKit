@@ -370,6 +370,15 @@ void EXPORT_API UWK_MsgSetAlphaMask(uint32_t id, bool enabled)
     UWKMessageQueue::Write(msg);
 }
 
+void EXPORT_API UWK_MsgSetTextCaretColor(uint32_t id, uint32_t color)
+{
+    UWKMessage msg;
+    msg.type = UMSG_VIEW_SETTEXTCARETCOLOR;
+    msg.browserID = id;
+    msg.iParams[0] = (int32_t) color;
+    UWKMessageQueue::Write(msg);
+}
+
 void EXPORT_API UWK_MsgShow(uint32_t id, bool show)
 {
     UWKBrowser* browser = UWKServer::Instance()->GetBrowser(id);

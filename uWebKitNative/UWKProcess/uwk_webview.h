@@ -81,6 +81,8 @@ class WebView : public QGraphicsWebView
 
     bool alphaMaskEnabled_;
 
+    uint32_t textCaretColor_;
+
     void checkIcon();
 
     void adjustSize(int width, int height);
@@ -89,6 +91,8 @@ class WebView : public QGraphicsWebView
     void setIME(const QString& ime);
 
     void setAlphaMask(bool enabled);
+
+    void setTextCaretColor(uint32_t color) { textCaretColor_ = color; }
 
 #ifdef GITHUB_BUILD
 

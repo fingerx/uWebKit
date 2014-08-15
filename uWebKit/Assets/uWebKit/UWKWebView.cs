@@ -295,6 +295,15 @@ public class UWKWebView : MonoBehaviour
         UWKPlugin.UWK_MsgSetAlphaMask(ID, enabled);
     }   
 
+    /// <summary>   
+    /// Sets the color of the text input caret in the form of 0xAARRGGBB 
+    /// Default is opaque black 0xFF000000
+    /// </summary>
+    public void SetTextCaretColor (uint color)
+    {
+        UWKPlugin.UWK_MsgSetTextCaretColor(ID, color);
+    }
+
     /// <summary>
     /// Clears all user cookies 
     /// </summary>    
