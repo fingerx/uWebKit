@@ -4,18 +4,13 @@ project (UWKPlugin)
 
 include (CheckIncludeFiles)
 
-set (CMAKE_OSX_SYSROOT /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk)
-set (CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
-
 include_directories( ${CMAKE_SOURCE_DIR} 
-				     ${CMAKE_SOURCE_DIR}/ThirdParty 
-				     ${CMAKE_SOURCE_DIR}/ThirdParty/poco/Foundation/include 
-				     ${CMAKE_SOURCE_DIR}/ThirdParty/jansson )
+                     ${CMAKE_SOURCE_DIR}/ThirdParty 
+                     ${CMAKE_SOURCE_DIR}/ThirdParty/poco/Foundation/include 
+                     ${CMAKE_SOURCE_DIR}/ThirdParty/jansson )
 
-# for jansson
-add_definitions(-DHAVE_STDINT_H)
 
-set (CMAKE_OSX_ARCHITECTURES "x86_64;i386")
+add_definitions(-DHAVE_STDINT_H -DPOCO_STATIC -DPOCO_NO_AUTOMATIC_LIBS -DBOOST_DATE_TIME_NO_LIB)
 
 set ( UWK_PLUGIN_SOURCE UWKPlugin/uwk_plugin.cpp UWKPlugin/uwk_unity_keys.cpp 
                         UWKPlugin/uwk_unity_beta.cpp UWKPlugin/uwk_unity_render.cpp
@@ -23,8 +18,57 @@ set ( UWK_PLUGIN_SOURCE UWKPlugin/uwk_plugin.cpp UWKPlugin/uwk_unity_keys.cpp
 
 file(GLOB JANSSON_SOURCE ThirdParty/jansson/*.c)
 
+if (APPLE)
+
+    set (CMAKE_OSX_SYSROOT /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk)
+    set (CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
+    set (CMAKE_OSX_ARCHITECTURES "x86_64;i386")
+
+    set (UWKCOMMON_SOURCE UWKCommon/uwk_renderer_gl.cpp)
+
+else()
+
+    add_definitions( -DUNICODE -DWIN32 -DHAVE_STDINT_H)
+
+    #-c -nologo -Zm200 -Zc:wchar_t -O2 -MD -GR -GL -W3 -w34100 -w34189 -EHsc
+
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:SSE2")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /arch:SSE2")    
+    #SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
+    
+    STRING(REPLACE "/GX" "" CMAKE_CXX_FLAGS_INIT ${CMAKE_CXX_FLAGS_INIT})
+    STRING(REPLACE "/GX" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
+    #statically link
+    FOREACH(flag_var CMAKE_CXX_FLAGS 
+    CMAKE_CXX_FLAGS_DEBUG 
+    CMAKE_CXX_FLAGS_RELEASE 
+    CMAKE_CXX_FLAGS_MINSIZEREL 
+    CMAKE_CXX_FLAGS_RELWITHDEBINFO
+    CMAKE_C_FLAGS_DEBUG
+    CMAKE_C_FLAGS_RELEASE
+    CMAKE_C_FLAGS_MINSIZEREL 
+    CMAKE_C_FLAGS_RELWITHDEBINFO )
+        IF(${flag_var} MATCHES "/MD")
+            STRING(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+        ENDIF(${flag_var} MATCHES "/MD")
+        
+        IF(${flag_var} MATCHES "/MDd")
+            STRING(REGEX REPLACE "/MDd" "/MTd" ${flag_var} "${${flag_var}}")
+        ENDIF(${flag_var} MATCHES "/MDd")
+
+        SET(${flag_var} "${${flag_var}} /MP${LOOM_BUILD_NUMCORES}")
+
+    ENDFOREACH(flag_var)       
+
+    set (UWKCOMMON_SOURCE UWKCommon/uwk_renderer_sharedmemory.cpp UWKCommon/uwk_renderer_d3d9.cpp UWKCommon/uwk_renderer_d3d11.cpp)
+    
+endif()
+
+
 set ( UWKCOMMON_SOURCE ${JANSSON_SOURCE}  
-	UWKCommon/uwk_config.cpp
+	${UWKCOMMON_SOURCE}   
+    UWKCommon/uwk_config.cpp
     UWKCommon/uwk_browser.cpp 
     UWKCommon/uwk_keyboard.cpp 
     UWKCommon/uwk_renderer.cpp
@@ -36,8 +80,7 @@ set ( UWKCOMMON_SOURCE ${JANSSON_SOURCE}
     UWKCommon/uwk_process_common.cpp
     UWKCommon/uwk_process_server.cpp
     UWKCommon/uwk_process_client.cpp
-    UWKCommon/uwk_processdb.cpp 
-    UWKCommon/uwk_renderer_gl.cpp
+    UWKCommon/uwk_processdb.cpp   
     ThirdParty/sqlite/sqlite3.c 
     ThirdParty/poco/Foundation/src/ASCIIEncoding.cpp 
     ThirdParty/poco/Foundation/src/Ascii.cpp 
@@ -218,14 +261,19 @@ add_library( UWKCommon ${UWKCOMMON_SOURCE})
 
 add_library( UWKPlugin MODULE ${UWK_PLUGIN_SOURCE} )
 
-set_target_properties( UWKPlugin PROPERTIES
-    XCODE_ATTRIBUTE_INFOPLIST_FILE ${CMAKE_SOURCE_DIR}/Build/Mac/UWKPlugin/Info.plist
-    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Build/Mac/UWKPlugin/Info.plist 
-    BUNDLE 1
-    BUNDLE_EXTENSION bundle
-    XCODE_ATTRIBUTE_WRAPPER_EXTENSION bundle
-    XCODE_ATTRIBUTE_MACH_O_TYPE mh_bundle )
+if (APPLE)
 
-target_link_libraries (UWKPlugin UWKCommon "-framework IOSurface" "-framework OpenGL")
+    set_target_properties( UWKPlugin PROPERTIES
+        XCODE_ATTRIBUTE_INFOPLIST_FILE ${CMAKE_SOURCE_DIR}/Build/Mac/UWKPlugin/Info.plist
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Build/Mac/UWKPlugin/Info.plist 
+        BUNDLE 1
+        BUNDLE_EXTENSION bundle
+        XCODE_ATTRIBUTE_WRAPPER_EXTENSION bundle
+        XCODE_ATTRIBUTE_MACH_O_TYPE mh_bundle )
 
+    target_link_libraries (UWKPlugin UWKCommon "-framework IOSurface" "-framework OpenGL")
+
+else()
+    target_link_libraries (UWKPlugin UWKCommon Iphlpapi)
+endif()
 

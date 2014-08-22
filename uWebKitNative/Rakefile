@@ -246,7 +246,23 @@ namespace :build do
 
 			FileUtils.mkdir(plugin_dll)
 
+	    	pluginCMakeDir = "#{$RAKE_ROOT}/temp/build#{$UWEBKIT_BUILD_ARCH}/UWKPluginCMake"
+
+			FileUtils.rmtree(pluginCMakeDir)
+			if (Dir.exists?(pluginCMakeDir))
+				abort("Unable to clean " + pluginCMakeDir + " is it in use?")  
+			end 
+
+			FileUtils.mkdir_p(pluginCMakeDir)
+
+			Dir.chdir(pluginCMakeDir) do
+      			sh "cmake ../../../ -DCMAKE_BUILD_TYPE=Release -G \"NMake Makefiles JOM\""
+      			sh "jom -j#{$numCores}"
+    		end
+
 			plugin_dll += "/UWKPlugin.dll"
+
+			FileUtils.cp("#{pluginCMakeDir}/UWKPlugin.dll", plugin_dll)
 
 	    	sh "#{$QT_DIR_BIN}/qmake -nocache -r -o Makefile \"CONFIG+=#{$UWEBKIT_BUILD_TARGET}\" \"BUILD_DIR=#{$UWK_BUILD_DIR}\" \"BUILD_ARCH=#{$UWEBKIT_BUILD_ARCH}\""
         	sh "jom clean"
@@ -257,6 +273,10 @@ namespace :build do
 			FileUtils.mkdir($UWKPROCESS_DEPLOY_DIR)
 
 			bits = "32bit"	
+
+			if $UWEBKIT_BUILD_ARCH == "64"
+				bits = "64bit"
+			end	
         	
         	FileUtils.cp("#{$UWK_BUILD_DIR}/UWKProcess.exe", $UWKPROCESS_DEPLOY_DIR)
 			sh "windeployqt --release #{$UWKPROCESS_DEPLOY_DIR}/UWKProcess.exe"
@@ -265,10 +285,6 @@ namespace :build do
     	    FileUtils.cp("#{$RAKE_ROOT}/ThirdParty/msvc10_#{bits}/msvcr100.dll", $UWKPROCESS_DEPLOY_DIR)
 
 			FileUtils.cp_r($UWKPROCESS_DEPLOY_DIR, $UWKPROCESS_DIR)
-
-			#PLUGIN, todo 32/64 plugin folder
-
-	        FileUtils.cp("#{$UWK_BUILD_DIR}/UWKPlugin.dll", plugin_dll)
 
 	        puts "\nuWebKit Native Plugin Built"
 	        puts "\nYou may now open the uWebKit Unity project in the root of your source checkout"
