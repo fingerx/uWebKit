@@ -165,13 +165,11 @@ bool UWKProcessDB::UpdateClientTimestamp(const UWKProcessCommon::PID& pid)
 
 }
 
-void UWKProcessDB::ReapClientsUsingServerPID(const UWKProcessCommon::PID& pid)
+void UWKProcessDB::ReapClients()
 {
 
     std::stringstream ss;
-    ss << "SELECT pid FROM clients WHERE parentpid = ";
-    ss << pid;
-    ss << ";";
+    ss << "SELECT pid FROM clients;";
 
     char* errMsg = NULL;
     QueryResult result;
@@ -206,7 +204,7 @@ void UWKProcessDB::ReapClientsUsingServerPID(const UWKProcessCommon::PID& pid)
 
 void UWKProcessDB::RegisterServer(UWKProcessServer* server)
 {
-    ReapClientsUsingServerPID(server->pid_);
+    ReapClients();
 
     std::stringstream ss;
 
