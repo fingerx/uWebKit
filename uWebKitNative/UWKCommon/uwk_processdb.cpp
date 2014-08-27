@@ -165,8 +165,49 @@ bool UWKProcessDB::UpdateClientTimestamp(const UWKProcessCommon::PID& pid)
 
 }
 
+void UWKProcessDB::ReapClientsUsingServerPID(const UWKProcessCommon::PID& pid)
+{
+
+    std::stringstream ss;
+    ss << "SELECT pid FROM clients WHERE parentpid = ";
+    ss << pid;
+    ss << ";";
+
+    char* errMsg = NULL;
+    QueryResult result;
+    int rc = sqlite3_exec(database_, ss.str().c_str(), QueryCallback, &result, &errMsg );
+    if ( rc != SQLITE_OK)
+    {
+        SQLiteError("Error ReapClientsUsingServerPID: %s", errMsg);
+        return;
+    }
+
+    std::string webRenderProcessPath;
+
+    UWKConfig::GetWebRenderProcessPath(webRenderProcessPath);
+
+    for (size_t i = 0; i < result.size(); i++)
+    {
+        UWKProcessCommon::PID cpid = (UWKProcessCommon::PID) strtoul(result[i].values[0].c_str(), NULL, 0);
+
+        std::string path;
+        if (UWKProcessUtils::GetExecutablePath(cpid, path) || !path.length())
+        {
+            if (UWKProcessUtils::CompareExecutablePaths(path, webRenderProcessPath))
+            {
+                 Poco::Process::kill(cpid);
+            }
+
+        }
+
+    }
+
+}
+
 void UWKProcessDB::RegisterServer(UWKProcessServer* server)
 {
+    ReapClientsUsingServerPID(server->pid_);
+
     std::stringstream ss;
 
     ss << "DELETE FROM servers WHERE pid = ";
@@ -372,7 +413,7 @@ bool UWKProcessDB::InitDB(const std::string& dbPath)
 
     // check problem with DB or whether version mismatch
     // for now, always drop
-    if (true || result.size() != 1 || result[0].values[0] != sVersion_)
+    if (result.size() != 1 || result[0].values[0] != sVersion_)
     {
         if (!CreateTables())
             return false;

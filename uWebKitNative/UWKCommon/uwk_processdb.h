@@ -56,6 +56,8 @@ class UWKProcessDB
     // there are multiple servers
     bool server_;
 
+    void ReapClientsUsingServerPID(const UWKProcessCommon::PID& pid);
+
 public:
 
     void RegisterServer(UWKProcessServer* server);
