@@ -1,9 +1,9 @@
 /******************************************
-  * uWebKit 
+  * uWebKit
   * (c) 2014 THUNDERBEAST GAMES, LLC
   * website: http://www.uwebkit.com email: sales@uwebkit.com
   * Usage of this source code requires a uWebKit Source License
-  * Please see UWEBKIT_SOURCE_LICENSE.txt in the root folder 
+  * Please see UWEBKIT_SOURCE_LICENSE.txt in the root folder
   * for details
 *******************************************/
 
@@ -366,7 +366,7 @@ bool UnityKeyHasCharacter(uint32_t unityKeyCode)
     case UnityKeyCode_X:
     case UnityKeyCode_Y:
     case UnityKeyCode_Z:
-    //case UnityKeyCode_Return:
+        //case UnityKeyCode_Return:
         return true;
     default:
         return false;
@@ -403,8 +403,26 @@ bool EncodeUnityKeyEvent(UnityKeyEvent* keyEvent, UWKMessage& msg)
     // We can get a single keydown, with character and keycode, and a corresponding single key up with
     // keycode and character
 
-    //UWKLog::LogVerbose("Unity Key Event, Type:%u Modifiers:%u KeyCode:%u Character:%u",
-    //                   keyEvent->Type, keyEvent->Modifiers, keyEvent->KeyCode, keyEvent->Character);
+    // UWKLog::LogVerbose("Unity Key Event, Type:%u Modifiers:%u KeyCode:%u Character:%u",
+    //                    keyEvent->Type, keyEvent->Modifiers, keyEvent->KeyCode, keyEvent->Character);
+
+#ifdef _MSC_VER
+
+    if (keyEvent->Modifiers & UnityKeyModifier_Control &&
+            ((keyEvent->KeyCode >= 'a' && keyEvent->KeyCode <= 'z') ||
+             (keyEvent->KeyCode >= 'A' && keyEvent->KeyCode <= 'Z')))
+    {
+        keyEvent->KeyCode = toupper(keyEvent->KeyCode);
+        keyEvent->Character = keyEvent->KeyCode;
+        SendKeyMessage(msg, keyEvent, UWKKeyboard::Control);
+        // select only works with down
+        if (keyEvent->KeyCode == 65)
+            msg.type = UMSG_KEY_DOWN;
+        return true;
+    }
+
+#endif
+
 
     // Modifiers
     uint32_t modifiers = 0;
@@ -420,17 +438,6 @@ bool EncodeUnityKeyEvent(UnityKeyEvent* keyEvent, UWKMessage& msg)
 
     if (keyEvent->Modifiers & UnityKeyModifier_Shift)
         modifiers |= UWKKeyboard::Shift;
-
-    /*
-    if (keyEvent->Modifiers & UnityKeyModifier_CapsLock)
-        modifiers |= UWKKeyboard::CapsLock;
-
-    if (keyEvent->Modifiers & UnityKeyModifier_FunctionKey)
-      modifiers |= UWKKeyboard::FunctionKey;
-
-    if (keyEvent->Modifiers & UnityKeyModifier_Numeric)
-        modifiers |= UWKKeyboard::Numeric;
-    */
 
 
     // if we have a character and keycode coming in
