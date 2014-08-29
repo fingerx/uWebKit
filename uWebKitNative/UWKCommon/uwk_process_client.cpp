@@ -42,7 +42,13 @@ bool UWKProcessClient::Update()
     {
         bool terminated;
         if (UWKProcessDB::Instance()->CheckProcessTimeout(parentPID_, true, terminated))
-            return false;
+        {
+            // the server is non-responsive, it could be in background or it maybe has a menu
+            // item open in Windows/OSX (which freezes main loop), we will only
+            // report if server process has actually terminated here
+            if (terminated)
+                return false;
+        }
 
         UWKProcessDB::Instance()->UpdateClientTimestamp(Process::id());
         updateTime_ = Timestamp();
