@@ -133,6 +133,11 @@ bool UWKProcessDB::CheckProcessTimeout(const UWKProcessCommon::PID& pid, bool se
     int rc = sqlite3_exec(database_, ss.str().c_str(), QueryCallback, &result, &errMsg );
     if ( rc != SQLITE_OK)
     {
+        if (rc == SQLITE_BUSY)
+        {
+            return false;
+        }
+
         SQLiteError("Error checking server timeout: %s", errMsg);
         return true;
     }
