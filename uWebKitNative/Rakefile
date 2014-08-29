@@ -35,7 +35,7 @@ $RAKE_ROOT = File.dirname(__FILE__)
 $UWEBKIT_BUILD_TARGET = "release" # "debug"
 
 $QT_VERSION = "5.3"
-$QT_FULL_VERSION = "5.3.0"
+$QT_FULL_VERSION = "5.3.1"
 
 $QT_DIR_BUILD = "temp/build#{$UWEBKIT_BUILD_ARCH}"
 $QT_DIR_PREFIX = "#{$RAKE_ROOT}/temp/build#{$UWEBKIT_BUILD_ARCH}/Qt-#{$QT_FULL_VERSION}"        
@@ -105,7 +105,7 @@ namespace :qt do
                 sh "jom -j1 module-qtwebkit install"    
             end
 
-            sh "xcopy /Y ThirdParty\\icu\\#{$UWEBKIT_BUILD_ARCH}bit\\bin\\*.dll temp\\build#{$UWEBKIT_BUILD_ARCH}\\Qt-5.3.0\\bin"                          
+            sh "xcopy /Y ThirdParty\\icu\\#{$UWEBKIT_BUILD_ARCH}bit\\bin\\*.dll temp\\build#{$UWEBKIT_BUILD_ARCH}\\Qt-5.3.1\\bin"                          
 
         end
 
