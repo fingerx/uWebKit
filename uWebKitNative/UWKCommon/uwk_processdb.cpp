@@ -189,7 +189,7 @@ void UWKProcessDB::ReapClients()
         UWKProcessCommon::PID cpid = (UWKProcessCommon::PID) strtoul(result[i].values[0].c_str(), NULL, 0);
 
         std::string path;
-        if (UWKProcessUtils::GetExecutablePath(cpid, path) || !path.length())
+        if (UWKProcessUtils::GetExecutablePath(cpid, path) && path.length())
         {
             if (UWKProcessUtils::CompareExecutablePaths(path, webRenderProcessPath))
             {
