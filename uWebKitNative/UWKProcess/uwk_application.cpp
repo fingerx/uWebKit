@@ -74,7 +74,15 @@ UWKApplication::UWKApplication(int &argc, char **argv)
         return;
 
     QWebSettings::globalSettings()->setAttribute(QWebSettings::JavascriptEnabled, true);
+
+#ifdef _MSC_VER
     QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
+#else
+    // Disable plugins (Flash) on OSX, as the plugin has stability issues and is broken
+    // HTML5 video works and if the Flash plugin is not detected YouTube will switch 
+    // to the HTML5 player
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, false);    
+#endif    
     QWebSettings::globalSettings()->setAttribute(QWebSettings::DnsPrefetchEnabled, true);
 
     std::string _directory;
