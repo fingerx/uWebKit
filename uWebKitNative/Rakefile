@@ -94,6 +94,11 @@ namespace :qt do
 
                 sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\plugins.pro .\\qtmultimedia\\src\\plugins\\plugins.pro"
                 sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\directshow\\directshow.pro .\\qtmultimedia\\src\\plugins\\directshow\\directshow.pro"
+                
+                # https://bugreports.qt-project.org/browse/QTBUG-39533
+                # not in Qt 5.3.1, check when upgrading
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtbase\\src\\network\\access\\qnetworkreplyhttpimpl_p.h .\\qtbase\\src\\network\\access\\qnetworkreplyhttpimpl_p.h"
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtbase\\src\\network\\access\\qnetworkreplyhttpimpl.cpp .\\qtbase\\src\\network\\access\\qnetworkreplyhttpimpl.cpp"
 
                 ENV['PATH'] = "#{$RAKE_ROOT}/ThirdParty/icu/#{bits}/bin;" +  ENV['PATH'] 
                 ENV['PATH'] = "#{$RAKE_ROOT}/#{$QT_DIR_SOURCE}/gnuwin32/bin;" +  ENV['PATH'] 
@@ -131,6 +136,7 @@ namespace :qt do
 
                 #patch Qt
                 sh "cp  #{$RAKE_ROOT}/QtPatches/Mac/qtbase/src/plugins/platforms/cocoa/* ./qtbase/src/plugins/platforms/cocoa"
+                sh "cp  #{$RAKE_ROOT}/QtPatches/Mac/qtbase/src/network/access/* ./qtbase/src/network/access"
 
                 sh "./configure -prefix #{$QT_DIR_PREFIX} -confirm-license -#{$QT_BUILD_TARGET} -platform #{platform} -no-c++11 -opensource -nomake examples -nomake tests"
                 sh "make -j#{$numCores} module-qtwebkit"
