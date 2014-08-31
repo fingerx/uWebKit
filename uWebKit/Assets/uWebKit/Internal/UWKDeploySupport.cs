@@ -11,6 +11,7 @@ using UnityEditor.Callbacks;
 
 public static class UWKDeploySupport
 {
+	
     static void RemovePaths(List<string> paths)
     {
         foreach (var _path in paths)
@@ -97,6 +98,22 @@ public static class UWKDeploySupport
         }
         
         RemovePaths(deployPathsToDelete);
+
+		// save off config for data that Unity does not make available at runtime
+		string cfgpath = assetDirectoryPrefix + "/uWebKit/Config";
+		if (!Directory.Exists (cfgpath))
+			Directory.CreateDirectory (cfgpath);;
+		
+		Dictionary<string,object> jconfig = new Dictionary<string,object> ();
+		jconfig["companyName"] = PlayerSettings.companyName;
+		jconfig["productName"] = PlayerSettings.productName;
+		var json = UWKJson.Serialize(jconfig);
+		
+		using (StreamWriter cfgfile = new StreamWriter(cfgpath + "/uwebkit.cfg"))
+		{
+			cfgfile.Write(json);
+		}
+
     }
 }
 

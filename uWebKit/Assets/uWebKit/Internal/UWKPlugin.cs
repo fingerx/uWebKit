@@ -7,6 +7,7 @@
 
 using UnityEngine;
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -52,8 +53,33 @@ public class UWKPlugin
         app["targetFrameRate"] = Application.targetFrameRate;
         app["graphicsDeviceVersion"] = SystemInfo.graphicsDeviceVersion;
         app["imeEnabled"] = UWKCore.IMEEnabled;
+#if UNITY_EDITOR 
 		app["companyName"] = PlayerSettings.companyName;
 		app["productName"] = PlayerSettings.productName;
+#else	
+		// Unity doesn't provide this data at runtime
+		// so, load it from our config
+
+		app["companyName"] = "DefaultCompany";
+		app["productName"] = "DefaultProduct";
+
+		var cfgfile = Application.streamingAssetsPath + "/uWebKit/Config/uwebkit.cfg";
+
+		if (File.Exists(cfgfile))
+		{
+			var jsonString = File.ReadAllText(cfgfile);
+
+			var cfg = UWKJson.Deserialize(jsonString) as Dictionary<string,object>;
+
+			if (cfg.ContainsKey("companyName"))
+				app["companyName"] = (string) cfg["companyName"];
+
+			if (cfg.ContainsKey("productName"))
+				app["productName"] = (string) cfg["productName"];
+		
+		}
+
+#endif
 
         var json = UWKJson.Serialize(djson);
         var nativeString = NativeUtf8FromString(json);
