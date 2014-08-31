@@ -167,6 +167,8 @@ void UWKProcessServer::Initialize()
 
     UWKProcessDB::Initialize(path, true);
 
+    UWKConfig::SetServerID(0);
+
     UWKProcessDB::Instance()->RegisterServer(sInstance_);
 
     UWKConfig::SetServerID(sInstance_->serverID_);

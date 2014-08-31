@@ -56,15 +56,18 @@ class UWKProcessDB
     // there are multiple servers
     bool server_;
 
-    void ReapClients();
+    void ReapClient(unsigned long parentPID);
+
+    // returns first available server id
+    int RefreshServers();
+
+    // gets the ids of the current running servers
+    void GetActiveServerIds(std::vector<unsigned long>& pids, std::vector<int>& ids);
 
 public:
 
     void RegisterServer(UWKProcessServer* server);
     void RegisterClient(UWKProcessClient* client);
-
-    // gets the ids of the current running servers
-    void GetActiveServerIds(std::vector<int>& ids);
 
     bool GetServerConfig(const UWKProcessCommon::PID& pid, std::string& config);
 

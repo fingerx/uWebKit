@@ -7,6 +7,7 @@
   * for details
 *******************************************/
 
+#include "jansson.h"
 #include <sstream>
 #include "uwk_config.h"
 #include "uwk_processdb.h"
@@ -21,7 +22,7 @@
 
 
 UWKProcessDB* UWKProcessDB::sInstance_ = NULL;
-std::string UWKProcessDB::sVersion_  = "1.01";
+std::string UWKProcessDB::sVersion_  = "1.02";
 
 UWKProcessDB::UWKProcessDB(bool server) : database_ (NULL), server_(server)
 {
@@ -170,10 +171,78 @@ bool UWKProcessDB::UpdateClientTimestamp(const UWKProcessCommon::PID& pid)
 
 }
 
-void UWKProcessDB::GetActiveServerIds(std::vector<int>& ids)
+int UWKProcessDB::RefreshServers()
+{
+    std::vector<int> ids;
+    std::vector<unsigned long> pids;
+    GetActiveServerIds(pids, ids);
+
+    std::stringstream ss;
+    ss << "SELECT pid FROM servers;";
+
+    char* errMsg = NULL;
+    QueryResult result;
+    int rc = sqlite3_exec(database_, ss.str().c_str(), QueryCallback, &result, &errMsg );
+    if ( rc != SQLITE_OK)
+    {
+        SQLiteError("Error RefreshServers: %s", errMsg);
+        return 0;
+    }
+
+    ss.str(std::string());
+
+    for (size_t i = 0; i < result.size(); i++)
+    {
+        unsigned long pid = strtoul(result[i].values[0].c_str(), NULL, 0);
+
+        if (std::find(pids.begin(), pids.end(), pid) == pids.end())
+        {
+            ss << "DELETE FROM servers WHERE pid = ";
+            ss << pid;
+            ss << ";";
+            std::string sql =  ss.str();
+            ss.str(std::string());
+            sqlite3_exec(database_, sql.c_str(), NULL, NULL, NULL);
+        }
+
+    }
+
+    // Reap orphaned clients
+    ss << "SELECT parentpid FROM clients;";
+    result.clear();
+    rc = sqlite3_exec(database_, ss.str().c_str(), QueryCallback, &result, &errMsg );
+    if ( rc == SQLITE_OK)
+    {
+        for (size_t i = 0; i < result.size(); i++)
+        {
+            unsigned long parentpid = strtoul(result[i].values[0].c_str(), NULL, 0);
+
+            if (std::find(pids.begin(), pids.end(), parentpid) == pids.end())
+            {
+                ReapClient(parentpid);
+            }
+        }
+    }
+
+    ss.str(std::string());
+
+    int i = 1;
+    while (true)
+    {
+        if (std::find(ids.begin(), ids.end(), i) == ids.end())
+            break;
+        i++;
+    }
+
+    return i;
+
+
+}
+
+void UWKProcessDB::GetActiveServerIds(std::vector<unsigned long> &pids, std::vector<int>& ids)
 {
     std::stringstream ss;
-    ss << "SELECT pid, id FROM servers;";
+    ss << "SELECT pid, id, config FROM servers;";
 
     char* errMsg = NULL;
     QueryResult result;
@@ -196,8 +265,34 @@ void UWKProcessDB::GetActiveServerIds(std::vector<int>& ids)
         std::string path;
         if (UWKProcessUtils::GetExecutablePath(cpid, path) && path.length())
         {
-            if (UWKProcessUtils::CompareExecutablePaths(path, serverProcessPath))
+            // this pid is alive
+            json_error_t error;
+            json_t* json = json_loads(result[i].values[2].c_str(), JSON_DISABLE_EOF_CHECK, &error);
+
+            if (!json)
             {
+                continue;
+            }
+
+            json_t* appConfig = json_object_get(json, "application");
+
+            if (!appConfig)
+            {
+                json_decref(json);
+                continue;
+            }
+
+             json_t* serverProcessPath = json_object_get(appConfig, "serverProcessPath");
+
+             if (!json_is_string(serverProcessPath))
+             {
+                 json_decref(json);
+                 continue;
+             }
+
+            if (UWKProcessUtils::CompareExecutablePaths(path, json_string_value(serverProcessPath)))
+            {
+                pids.push_back((unsigned long) cpid);
                 ids.push_back((int) id);
             }
 
@@ -209,11 +304,13 @@ void UWKProcessDB::GetActiveServerIds(std::vector<int>& ids)
 
 }
 
-void UWKProcessDB::ReapClients()
+void UWKProcessDB::ReapClient(unsigned long parentPID)
 {
 
     std::stringstream ss;
-    ss << "SELECT pid FROM clients;";
+    ss << "SELECT pid, config FROM clients WHERE parentpid = ";
+    ss << parentPID;
+    ss << ";";
 
     char* errMsg = NULL;
     QueryResult result;
@@ -224,9 +321,9 @@ void UWKProcessDB::ReapClients()
         return;
     }
 
-    std::string webRenderProcessPath;
+    ss.str(std::string());
 
-    UWKConfig::GetWebRenderProcessPath(webRenderProcessPath);
+    bool killAttempted = false;
 
     for (size_t i = 0; i < result.size(); i++)
     {
@@ -235,48 +332,60 @@ void UWKProcessDB::ReapClients()
         std::string path;
         if (UWKProcessUtils::GetExecutablePath(cpid, path) && path.length())
         {
-            if (UWKProcessUtils::CompareExecutablePaths(path, webRenderProcessPath))
+            // this pid is alive
+            json_error_t error;
+            json_t* json = json_loads(result[i].values[1].c_str(), JSON_DISABLE_EOF_CHECK, &error);
+
+            if (!json)
             {
-                 Poco::Process::kill(cpid);
+                continue;
+            }
+
+            json_t* appConfig = json_object_get(json, "application");
+
+            if (!appConfig)
+            {
+                json_decref(json);
+                continue;
+            }
+
+             json_t* webRenderProcessPath = json_object_get(appConfig, "webRenderProcessPath");
+
+             if (!json_is_string(webRenderProcessPath))
+             {
+                 json_decref(json);
+                 continue;
+             }
+
+            if (UWKProcessUtils::CompareExecutablePaths(path, json_string_value(webRenderProcessPath)))
+            {
+                killAttempted = true;
+                Poco::Process::kill(cpid);
             }
 
         }
+    }
 
+    if (!killAttempted)
+    {
+        ss << "DELETE FROM clients WHERE parentpid = ";
+        ss << parentPID;
+        ss << ";";
+        sqlite3_exec(database_, ss.str().c_str(), NULL, NULL, NULL);
+        ss.str(std::string());
     }
 
 }
 
 void UWKProcessDB::RegisterServer(UWKProcessServer* server)
 {
-    // get a unique server id
-    std::vector<int> ids;
-    GetActiveServerIds(ids);
 
-    server->serverID_ = 1;
+    // we can only have one client
+    ReapClient(server->pid_);
 
-    while(true)
-    {
-        size_t i;
-        for ( i = 0; i < ids.size(); i++)
-        {
-            if (server->serverID_ == ids[i])
-                break;
-        }
 
-        if (i != ids.size())
-        {
-            server->serverID_++;
-            continue;
-        }
-
-        break;
-
-    }
-
+    server->serverID_ = RefreshServers();
     UWKConfig::SetServerID(server->serverID_);
-
-    // TODO: reap clients using this ID
-    //ReapClients();
 
     std::stringstream ss;
 
@@ -284,13 +393,6 @@ void UWKProcessDB::RegisterServer(UWKProcessServer* server)
     ss << server->pid_;
     ss << ";";
     std::string sql =  ss.str();
-    ss.str(std::string());
-    sqlite3_exec(database_, sql.c_str(), NULL, NULL, NULL);
-
-    ss << "DELETE FROM clients WHERE parentpid = ";
-    ss << server->pid_;
-    ss << ";";
-    sql =  ss.str();
     ss.str(std::string());
     sqlite3_exec(database_, sql.c_str(), NULL, NULL, NULL);
 
@@ -323,11 +425,17 @@ void UWKProcessDB::RegisterClient(UWKProcessClient* client)
     ss.str(std::string());
     sqlite3_exec(database_, sql.c_str(), NULL, NULL, NULL);
 
-    ss << "INSERT INTO clients (pid, parentpid) VALUES ( ";
+    std::string config;
+    UWKConfig::GetJSON(config);
+
+    ss << "INSERT INTO clients (pid, config, parentpid) VALUES ( ";
     ss << client->pid_;
     ss << ", '";
+    ss << config;
+    ss << "', ";
     ss << client->parentPID_;
-    ss << "' );";
+    ss << " );";
+    sql =  ss.str();
 
     sql =  ss.str();
     ss.str(std::string());
@@ -416,7 +524,7 @@ bool UWKProcessDB::CreateTables()
     }
 
     // create the clients table
-    rc = sqlite3_exec(database_, "CREATE TABLE clients ( pid INTEGER PRIMARY KEY NOT NULL, parentpid INTEGER NOT NULL, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP);", NULL, NULL, &errMsg );
+    rc = sqlite3_exec(database_, "CREATE TABLE clients ( pid INTEGER PRIMARY KEY NOT NULL, parentpid INTEGER NOT NULL, config TEXT NOT NULL, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP);", NULL, NULL, &errMsg );
     if (rc != SQLITE_OK)
     {
         SQLiteError("Error creating clients table for process database: %s", errMsg);
