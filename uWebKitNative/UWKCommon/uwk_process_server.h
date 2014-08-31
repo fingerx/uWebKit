@@ -18,13 +18,16 @@ class UWKProcessServer : public UWKProcessCommon
     UWKProcessServer(const PID& pid);
     ~UWKProcessServer();
 
-
     ProcessHandle *renderProcessHandle_;
     Process::Args renderProcessArgs_;
 
 public:
 
     PID renderProcessPID_;
+
+    // globally unique ID as more than once server (application instance) may be running
+    // valid once server is registered
+    int serverID_;
 
     static UWKProcessServer* Instance();
 

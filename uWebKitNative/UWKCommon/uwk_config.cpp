@@ -28,7 +28,12 @@ std::string UWKConfig::dataPath_;
 std::string UWKConfig::persistentDataPath_;
 std::string UWKConfig::temporaryCachePath_;
 std::string UWKConfig::graphicsDeviceVersion_;
+std::string UWKConfig::productName_;
+std::string UWKConfig::companyName_;
 bool UWKConfig::imeEnabled_ = false;
+int UWKConfig::serverID_ = 0;
+
+
 
 void UWKConfig::GetJSON(std::string& json)
 {
@@ -44,11 +49,50 @@ void UWKConfig::GetJSON(std::string& json)
     json_object_set(app, "webRenderProcessPath", json_string(webRenderProcessPath_.c_str()));
     json_object_set(app, "webRenderProcessWorkingPath", json_string(webRenderProcessWorkingPath_.c_str()));
     json_object_set(app, "graphicsDeviceVersion", json_string(graphicsDeviceVersion_.c_str()));
+    json_object_set(app, "companyName", json_string(companyName_.c_str()));
+    json_object_set(app, "productName", json_string(productName_.c_str()));
     json_object_set(app, "imeEnabled", imeEnabled_ ? json_true() : json_false());
+    json_object_set(app, "serverID", json_integer(serverID_));
 
     json = json_dumps(config, JSON_INDENT(4));
 
     json_decref(config);
+
+}
+
+void UWKConfig::GetSharedMemoryPrefix(std::string& prefix)
+{
+    prefix.clear();
+
+    if (!companyName_.length() && !productName_.length())
+    {
+        return;
+    }
+
+    if (companyName_.length())
+    {
+        for (size_t i = 0; i < companyName_.length(); i++)
+        {
+            if (companyName_[i] != ' ')
+                prefix += companyName_[i];
+        }
+    }
+
+    if (productName_.length())
+    {
+        if (prefix.length())
+            prefix += "_";
+
+        for (size_t i = 0; i < productName_.length(); i++)
+        {
+            if (productName_[i] != ' ')
+                prefix += productName_[i];
+        }
+    }
+
+    if (prefix.length())
+        prefix += "_";
+
 
 }
 
@@ -77,6 +121,17 @@ void UWKConfig::GetDataPath(std::string& path)
     path = dataPath_;
 }
 
+void UWKConfig::GetProductName(std::string& productName)
+{
+    productName = productName_;
+}
+
+void UWKConfig::GetCompanyName(std::string& companyName)
+{
+    companyName = companyName_;
+}
+
+
 void UWKConfig::GetTemporaryCachePath(std::string& path)
 {
     path = temporaryCachePath_;
@@ -87,6 +142,10 @@ bool UWKConfig::GetIMEEnabled()
     return imeEnabled_;
 }
 
+int UWKConfig::GetServerID()
+{
+    return serverID_;
+}
 
 bool UWKConfig::InitFromUnityJSON(std::string& json)
 {
@@ -148,6 +207,26 @@ bool UWKConfig::InitFromUnityJSON(std::string& json)
     svalue = json_string_value(jvalue);
     SetGraphicsDeviceVersion(svalue);
 
+    // companyName
+    jvalue = json_object_get(appConfig, "companyName");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        json_decref(unityJSON);
+        return false;
+    }
+    svalue = json_string_value(jvalue);
+    SetCompanyName(svalue);
+
+    // productName
+    jvalue = json_object_get(appConfig, "productName");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        json_decref(unityJSON);
+        return false;
+    }
+    svalue = json_string_value(jvalue);
+    SetProductName(svalue);
+
     // imeEnabled
     jvalue = json_object_get(appConfig, "imeEnabled");
     if (!jvalue || !json_is_boolean(jvalue))
@@ -157,6 +236,10 @@ bool UWKConfig::InitFromUnityJSON(std::string& json)
     }
 
     imeEnabled_= json_is_true(jvalue);
+
+    // serverID is not set from Unity JSON and
+    // is valid once server is registered with process
+    // database
 
     // isEditor
     jvalue = json_object_get(appConfig, "isEditor");
@@ -360,6 +443,24 @@ bool UWKConfig::SetFromJSON(const std::string& json)
     }
     graphicsDeviceVersion_ = json_string_value(jvalue);
 
+    // companyName
+    jvalue = json_object_get(app, "companyName");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        json_decref(config);
+        return false;
+    }
+    companyName_ = json_string_value(jvalue);
+
+    // productName
+    jvalue = json_object_get(app, "productName");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        json_decref(config);
+        return false;
+    }
+    productName_ = json_string_value(jvalue);
+
     // imeEnabled
     jvalue = json_object_get(app, "imeEnabled");
     if (!jvalue || !json_is_boolean(jvalue))
@@ -369,6 +470,16 @@ bool UWKConfig::SetFromJSON(const std::string& json)
     }
 
     imeEnabled_ = json_is_true(jvalue);
+
+    // serverID
+    jvalue = json_object_get(app, "serverID");
+    if (!jvalue || !json_is_integer(jvalue))
+    {
+        json_decref(config);
+        return false;
+    }
+
+    serverID_ = json_integer_value(jvalue);
 
     json_decref(config);
     return true;
@@ -415,6 +526,16 @@ void UWKConfig::SetGraphicsDeviceVersion(const std::string& deviceVersion)
     graphicsDeviceVersion_ = deviceVersion;
 }
 
+void UWKConfig::SetProductName(const std::string& productName)
+{
+    productName_ = productName;
+}
+
+void UWKConfig::SetCompanyName(const std::string& companyName)
+{
+    companyName_ = companyName;
+}
+
 bool UWKConfig::IsDirect3D9()
 {
 
@@ -450,6 +571,11 @@ bool UWKConfig::IMEEnabled()
 void UWKConfig::SetIMEEnabled(bool imeEnabled)
 {
     imeEnabled_ = imeEnabled;
+}
+
+void UWKConfig::SetServerID(int serverID)
+{
+    serverID_ = serverID;
 }
 
 

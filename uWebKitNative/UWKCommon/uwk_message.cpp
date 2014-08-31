@@ -7,6 +7,7 @@
   * for details
 *******************************************/
 
+#include "uwk_config.h"
 #include "uwk_message.h"
 #include "Poco/UTF8Encoding.h"
 #include <fstream>
@@ -17,7 +18,6 @@ uint32_t UWKMessageQueue::sAyncMessageIDCounter_ = 1;
 
 void UWKMessageQueue::Initialize(bool isMainProcess)
 {
-
     //UWKLog::LogVerbose("%lu message queue size\n", UWK_MESSAGE_MAX * sizeof(UWKMessage));
 
     if (sReadQueue_)
@@ -212,19 +212,39 @@ UWKMessageQueue::~UWKMessageQueue()
 }
 
 UWKMessageQueue::UWKMessageQueue(const std::string& name, UWKMessageQueueMode mode, bool create):
-    name_(name),
     mode_(mode),
-    create_(create),
-    dataBuffer_(NULL)
+    dataBuffer_(NULL),
+    create_(create)
 {
+    std::stringstream ss;
+    int serverID = UWKConfig::GetServerID();
+    std::string prefix;
+    UWKConfig::GetSharedMemoryPrefix(prefix);
 
-    dataBufferName_ = name_ + "_databuffer";
+    if (prefix.length())
+        ss << prefix;
+
+    ss << name;
+    ss << "_";
+    ss << serverID;
+    name_ = ss.str();
+    ss.str(std::string());
+
+    if (prefix.length())
+        ss << prefix;
+
+    ss << name;
+    ss << "_databuffer";
+    ss << "_";
+    ss << serverID;
+    dataBufferName_ = ss.str();
+    ss.str(std::string());
 
     if (create)
     {
         //Erase previous message queue
-        message_queue::remove(name.c_str());
-        internalQueue_ = new message_queue(create_only, name.c_str(), UWK_MESSAGE_MAX, sizeof(UWKMessage));
+        message_queue::remove(name_.c_str());
+        internalQueue_ = new message_queue(create_only, name_.c_str(), UWK_MESSAGE_MAX, sizeof(UWKMessage));
 
         //Create shared memory
         shared_memory_object::remove(dataBufferName_.c_str());
@@ -232,7 +252,7 @@ UWKMessageQueue::UWKMessageQueue(const std::string& name, UWKMessageQueueMode mo
     }
     else
     {
-        internalQueue_ = new message_queue(open_only, name.c_str());
+        internalQueue_ = new message_queue(open_only, name_.c_str());
         dataBuffer_ = new UWKManagedMemory(open_only, dataBufferName_.c_str());
     }
 

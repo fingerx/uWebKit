@@ -20,7 +20,10 @@ class UWKConfig
     static std::string dataPath_;
     static std::string temporaryCachePath_;
     static std::string graphicsDeviceVersion_;
+    static std::string companyName_;
+    static std::string productName_;
     static bool imeEnabled_;
+    static int serverID_;
 
 public:
 
@@ -34,11 +37,20 @@ public:
     static void GetWebRenderProcessPath(std::string& path);
     static void GetWebRenderProcessWorkingPath(std::string& path);
 
+    static void GetProductName(std::string& productName);
+    static void GetCompanyName(std::string& companyName);
+
     static void GetDataPath(std::string& path);
     static void GetPersistentDataPath(std::string& path);
     static void GetTemporaryCachePath(std::string& path);
     static void GetGraphicsDeviceVersion(std::string& deviceVersion);
     static bool GetIMEEnabled();
+    static int  GetServerID();
+
+    // a combination of Company and Product name
+    // which provides a folder as to not conflict
+    // with other products using shared memory
+    static void GetSharedMemoryPrefix(std::string& prefix);
 
     static bool InitFromUnityJSON(std::string& json);
     static bool InitDevDefaults();
@@ -54,6 +66,10 @@ public:
     static void SetTemporaryCachePath(const std::string& path);
     static void SetGraphicsDeviceVersion(const std::string& graphicsVersion);
     static void SetIMEEnabled(bool imeEnabled);
+    static void SetServerID(int serverID);
+
+    static void SetCompanyName(const std::string& companyName);
+    static void SetProductName(const std::string& productName);
 
     static bool IsDirect3D9();
     static bool IsDirect3D11();

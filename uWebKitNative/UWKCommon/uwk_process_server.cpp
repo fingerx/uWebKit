@@ -22,7 +22,10 @@ using Poco::Base64Decoder;
 
 UWKProcessServer* UWKProcessServer::sInstance_ = NULL;
 
-UWKProcessServer::UWKProcessServer(const PID& pid) : UWKProcessCommon(pid), renderProcessPID_(0), renderProcessHandle_(NULL)
+UWKProcessServer::UWKProcessServer(const PID& pid) : UWKProcessCommon(pid),
+    renderProcessHandle_(NULL),
+    renderProcessPID_(0),
+    serverID_(0)
 {
 
 }
@@ -165,6 +168,8 @@ void UWKProcessServer::Initialize()
     UWKProcessDB::Initialize(path, true);
 
     UWKProcessDB::Instance()->RegisterServer(sInstance_);
+
+    UWKConfig::SetServerID(sInstance_->serverID_);
 
 }
 

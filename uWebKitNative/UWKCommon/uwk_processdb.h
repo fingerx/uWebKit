@@ -63,6 +63,9 @@ public:
     void RegisterServer(UWKProcessServer* server);
     void RegisterClient(UWKProcessClient* client);
 
+    // gets the ids of the current running servers
+    void GetActiveServerIds(std::vector<int>& ids);
+
     bool GetServerConfig(const UWKProcessCommon::PID& pid, std::string& config);
 
     bool CheckProcessTerminated(const UWKProcessCommon::PID& pid, bool serverProcess);

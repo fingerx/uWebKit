@@ -21,7 +21,7 @@
 
 
 UWKProcessDB* UWKProcessDB::sInstance_ = NULL;
-std::string UWKProcessDB::sVersion_  = "1.0";
+std::string UWKProcessDB::sVersion_  = "1.01";
 
 UWKProcessDB::UWKProcessDB(bool server) : database_ (NULL), server_(server)
 {
@@ -60,7 +60,7 @@ bool UWKProcessDB::UpdateServerTimestamp(const UWKProcessCommon::PID& pid)
     ss << pid;
     ss << ";";
     std::string sql =  ss.str();
-    ss.clear();
+    ss.str(std::string());
 
     int rc = sqlite3_exec(database_, sql.c_str(), NULL, NULL, NULL);
 
@@ -162,11 +162,50 @@ bool UWKProcessDB::UpdateClientTimestamp(const UWKProcessCommon::PID& pid)
     ss << pid;
     ss << ";";
     std::string sql =  ss.str();
-    ss.clear();
+    ss.str(std::string());
 
     int rc = sqlite3_exec(database_, sql.c_str(), NULL, NULL, NULL);
 
     return (rc == SQLITE_OK);
+
+}
+
+void UWKProcessDB::GetActiveServerIds(std::vector<int>& ids)
+{
+    std::stringstream ss;
+    ss << "SELECT pid, id FROM servers;";
+
+    char* errMsg = NULL;
+    QueryResult result;
+    int rc = sqlite3_exec(database_, ss.str().c_str(), QueryCallback, &result, &errMsg );
+    if ( rc != SQLITE_OK)
+    {
+        SQLiteError("Error GetActiveServerCount: %s", errMsg);
+        return;
+    }
+
+    std::string serverProcessPath;
+
+    UWKConfig::GetServerProcessPath(serverProcessPath);
+
+    for (size_t i = 0; i < result.size(); i++)
+    {
+        UWKProcessCommon::PID cpid = (UWKProcessCommon::PID) strtoul(result[i].values[0].c_str(), NULL, 0);
+        unsigned long id = strtoul(result[i].values[1].c_str(), NULL, 0);
+
+        std::string path;
+        if (UWKProcessUtils::GetExecutablePath(cpid, path) && path.length())
+        {
+            if (UWKProcessUtils::CompareExecutablePaths(path, serverProcessPath))
+            {
+                ids.push_back((int) id);
+            }
+
+        }
+
+    }
+
+    return;
 
 }
 
@@ -209,7 +248,35 @@ void UWKProcessDB::ReapClients()
 
 void UWKProcessDB::RegisterServer(UWKProcessServer* server)
 {
-    ReapClients();
+    // get a unique server id
+    std::vector<int> ids;
+    GetActiveServerIds(ids);
+
+    server->serverID_ = 1;
+
+    while(true)
+    {
+        size_t i;
+        for ( i = 0; i < ids.size(); i++)
+        {
+            if (server->serverID_ == ids[i])
+                break;
+        }
+
+        if (i != ids.size())
+        {
+            server->serverID_++;
+            continue;
+        }
+
+        break;
+
+    }
+
+    UWKConfig::SetServerID(server->serverID_);
+
+    // TODO: reap clients using this ID
+    //ReapClients();
 
     std::stringstream ss;
 
@@ -217,27 +284,28 @@ void UWKProcessDB::RegisterServer(UWKProcessServer* server)
     ss << server->pid_;
     ss << ";";
     std::string sql =  ss.str();
-    ss.clear();
+    ss.str(std::string());
     sqlite3_exec(database_, sql.c_str(), NULL, NULL, NULL);
 
     ss << "DELETE FROM clients WHERE parentpid = ";
     ss << server->pid_;
     ss << ";";
     sql =  ss.str();
-    ss.clear();
+    ss.str(std::string());
     sqlite3_exec(database_, sql.c_str(), NULL, NULL, NULL);
 
     std::string config;
     UWKConfig::GetJSON(config);
 
-    ss << "INSERT INTO servers (pid, config) VALUES ( ";
+    ss << "INSERT INTO servers (pid, config, id) VALUES ( ";
     ss << server->pid_;
     ss << ", '";
     ss << config;
-    ss << "' );";
-
+    ss << "', ";
+    ss << server->serverID_;
+    ss << " );";
     sql =  ss.str();
-    ss.clear();
+    ss.str(std::string());
     sqlite3_exec(database_, sql.c_str(), NULL, NULL, NULL);
 
 }
@@ -252,7 +320,7 @@ void UWKProcessDB::RegisterClient(UWKProcessClient* client)
     ss << client->pid_;
     ss << ";";
     sql =  ss.str();
-    ss.clear();
+    ss.str(std::string());
     sqlite3_exec(database_, sql.c_str(), NULL, NULL, NULL);
 
     ss << "INSERT INTO clients (pid, parentpid) VALUES ( ";
@@ -262,7 +330,7 @@ void UWKProcessDB::RegisterClient(UWKProcessClient* client)
     ss << "' );";
 
     sql =  ss.str();
-    ss.clear();
+    ss.str(std::string());
     sqlite3_exec(database_, sql.c_str(), NULL, NULL, NULL);
 }
 
@@ -340,7 +408,7 @@ bool UWKProcessDB::CreateTables()
     }
 
     // create the servers table
-    rc = sqlite3_exec(database_, "CREATE TABLE servers ( pid INTEGER PRIMARY KEY NOT NULL, config TEXT NOT NULL, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP );", NULL, NULL, &errMsg );
+    rc = sqlite3_exec(database_, "CREATE TABLE servers ( pid INTEGER PRIMARY KEY NOT NULL, config TEXT NOT NULL, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, id INTEGER DEFAULT 0);", NULL, NULL, &errMsg );
     if (rc != SQLITE_OK)
     {
         SQLiteError("Error creating servers table for process database: %s", errMsg);

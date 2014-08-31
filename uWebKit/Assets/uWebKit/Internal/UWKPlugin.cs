@@ -52,6 +52,8 @@ public class UWKPlugin
         app["targetFrameRate"] = Application.targetFrameRate;
         app["graphicsDeviceVersion"] = SystemInfo.graphicsDeviceVersion;
         app["imeEnabled"] = UWKCore.IMEEnabled;
+		app["companyName"] = PlayerSettings.companyName;
+		app["productName"] = PlayerSettings.productName;
 
         var json = UWKJson.Serialize(djson);
         var nativeString = NativeUtf8FromString(json);

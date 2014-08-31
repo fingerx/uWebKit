@@ -20,7 +20,6 @@ class UWKProcessClient : public UWKProcessCommon
 public:
 
     PID parentPID_;
-
     static UWKProcessClient* Instance();
     static bool Initialize(const PID& parentPID, const std::string& processdb);
     bool Update();

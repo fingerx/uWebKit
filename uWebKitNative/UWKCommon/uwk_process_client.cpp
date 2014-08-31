@@ -71,6 +71,7 @@ bool UWKProcessClient::Initialize(const PID& parentPID, const std::string& proce
         return false;
 
     std::string config;
+
     if (!UWKProcessDB::Instance()->GetServerConfig(parentPID, config))
         return false;
 
