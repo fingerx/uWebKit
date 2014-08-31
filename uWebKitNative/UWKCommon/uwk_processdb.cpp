@@ -9,6 +9,7 @@
 
 #include "jansson.h"
 #include <sstream>
+#include <algorithm>
 #include "uwk_config.h"
 #include "uwk_processdb.h"
 #include "uwk_process_client.h"

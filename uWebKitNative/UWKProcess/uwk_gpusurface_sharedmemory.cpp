@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include "UWKCommon/uwk_log.h"
+#include "UWKCommon/uwk_config.h"
 #include "uwk_gpusurface_sharedmemory.h"
 
 namespace UWK
@@ -23,8 +24,13 @@ GpuSurfaceSharedMemory::GpuSurfaceSharedMemory(uint32_t maxWidth, uint32_t maxHe
 {
     surfaceId_ = sSurfaceIdCounter++;
 
-    char name[512];
-    _snprintf(name, 512, "uwk_gpu_surface_%u", surfaceId_);
+    char name[1024];
+    std::string prefix;
+    UWKConfig::GetSharedMemoryPrefix(prefix);
+    if (prefix.length())
+        _snprintf(name, 1024, "%suwk_gpu_surface_%u_%u", prefix.c_str(), surfaceId_, UWKConfig::GetServerID());
+    else
+        _snprintf(name, 1024, "uwk_gpu_surface_%u_%u", surfaceId_, UWKConfig::GetServerID());
 
     int len = strlen(name)+1;
     wchar_t *wText = new wchar_t[len];

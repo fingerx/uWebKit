@@ -8,14 +8,13 @@
 *******************************************/
 
 #include <stdio.h>
+#include "uwk_config.h"
 #include "uwk_renderer_sharedmemory.h"
 
 UWKRendererSharedMemory::UWKRendererSharedMemory(uint32_t maxWidth, uint32_t maxHeight, void* nativeTexturePtr):
     UWKRenderer(maxWidth, maxHeight, nativeTexturePtr),
     valid_(false), handle_(NULL)
 {
-
-
 
 }
 
@@ -32,8 +31,13 @@ void UWKRendererSharedMemory::Initialize(const UWKMessage& gpuSurfaceInfo)
 {
     surfaceId_ = gpuSurfaceInfo.iParams[0];
 
-    char name[512];
-    _snprintf(name, 512, "uwk_gpu_surface_%u", surfaceId_);
+    char name[1024];
+    std::string prefix;
+    UWKConfig::GetSharedMemoryPrefix(prefix);
+    if (prefix.length())
+        _snprintf(name, 1024, "%suwk_gpu_surface_%u_%u", prefix.c_str(), surfaceId_, UWKConfig::GetServerID());
+    else
+        _snprintf(name, 1024, "uwk_gpu_surface_%u_%u", surfaceId_, UWKConfig::GetServerID());
 
     int len = strlen(name)+1;
     wchar_t *wText = new wchar_t[len];
