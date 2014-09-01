@@ -408,6 +408,14 @@ bool EncodeUnityKeyEvent(UnityKeyEvent* keyEvent, UWKMessage& msg)
 
 #ifdef _MSC_VER
 
+    if ((keyEvent->Modifiers & UnityKeyModifier_Control) && (keyEvent->Modifiers & UnityKeyModifier_Alt))
+    {
+        if (keyEvent->Character == '@')
+        {
+            keyEvent->Modifiers = 0;
+        }
+    }
+
     if (keyEvent->Modifiers & UnityKeyModifier_Control &&
             ((keyEvent->KeyCode >= 'a' && keyEvent->KeyCode <= 'z') ||
              (keyEvent->KeyCode >= 'A' && keyEvent->KeyCode <= 'Z')))
@@ -506,6 +514,8 @@ bool EncodeUnityKeyEvent(UnityKeyEvent* keyEvent, UWKMessage& msg)
         keyEvent->KeyCode = keyEvent->Character;
     }
 
+#ifndef _MSC_VER
+
     // if AltGr is down, Unity is reporting both the untranslated key & the AltGr combo key as input so filter here
     if ((modifiers & UWKKeyboard::Alt))
     {
@@ -521,6 +531,7 @@ bool EncodeUnityKeyEvent(UnityKeyEvent* keyEvent, UWKMessage& msg)
             modifiers &= ~UWKKeyboard::Alt;
 
     }
+#endif
 
 
     SendKeyMessage(msg, keyEvent, modifiers);
