@@ -506,6 +506,23 @@ bool EncodeUnityKeyEvent(UnityKeyEvent* keyEvent, UWKMessage& msg)
         keyEvent->KeyCode = keyEvent->Character;
     }
 
+    // if AltGr is down, Unity is reporting both the untranslated key & the AltGr combo key as input so filter here
+    if ((modifiers & UWKKeyboard::Alt))
+    {
+        // german on OSX, option + q/l
+        if (keyEvent->KeyCode == 'q' || keyEvent->KeyCode == 'l')
+            return false;
+
+        // french on OSX, option + '\'
+        if (keyEvent->KeyCode == '\\')
+            return false;
+
+        if (keyEvent->Character == '@')
+            modifiers &= ~UWKKeyboard::Alt;
+
+    }
+
+
     SendKeyMessage(msg, keyEvent, modifiers);
 
     return true;
