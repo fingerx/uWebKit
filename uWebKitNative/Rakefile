@@ -104,8 +104,14 @@ namespace :qt do
                 ENV['PATH'] = "#{$RAKE_ROOT}/#{$QT_DIR_SOURCE}/gnuwin32/bin;" +  ENV['PATH'] 
                 ENV['DXSDK_DIR'] = "#{$RAKE_ROOT}\\ThirdParty\\dxsdk_june_2010\\"
 
+                config = "-prefix #{$QT_DIR_PREFIX} -#{$QT_BUILD_TARGET} -opensource -confirm-license -make-tool jom -no-wmf-backend -no-avx -no-avx2 -ltcg -platform win32-msvc2010 -icu -openssl-linked #{skip} #{libs} OPENSSL_LIBS=\"ssleay32MT.lib libeay32MT.lib user32.lib advapi32.lib gdi32.lib crypt32.lib\" -I #{$RAKE_ROOT}/Thirdparty/openssl/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/openssl/#{bits} -I #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/lib -nomake examples -nomake tests"
+
+                #windows xp support
+                if $UWEBKIT_BUILD_ARCH == "32"
+                    config = "-target xp " + config
+                end
                 #sh "configure.bat -prefix #{$QT_DIR_PREFIX} -#{$QT_BUILD_TARGET} -opensource -confirm-license -make-tool jom -no-opengl -no-angle -no-wmf-backend -no-avx -no-avx2 -ltcg -platform win32-msvc2010 -icu -openssl-linked #{skip} #{libs} OPENSSL_LIBS=\"ssleay32MT.lib libeay32MT.lib user32.lib advapi32.lib gdi32.lib crypt32.lib\" -I #{$RAKE_ROOT}/Thirdparty/openssl/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/openssl/#{bits} -I #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/lib -nomake examples -nomake tests"
-                sh "configure.bat -prefix #{$QT_DIR_PREFIX} -#{$QT_BUILD_TARGET} -opensource -confirm-license -make-tool jom -no-wmf-backend -no-avx -no-avx2 -ltcg -platform win32-msvc2010 -icu -openssl-linked #{skip} #{libs} OPENSSL_LIBS=\"ssleay32MT.lib libeay32MT.lib user32.lib advapi32.lib gdi32.lib crypt32.lib\" -I #{$RAKE_ROOT}/Thirdparty/openssl/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/openssl/#{bits} -I #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/lib -nomake examples -nomake tests"
+                sh "configure.bat #{config}"
                 sh "jom -j#{$numCores} module-qtwebkit"   
                 sh "jom -j1 module-qtwebkit install"    
             end

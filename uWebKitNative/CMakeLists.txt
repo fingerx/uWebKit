@@ -30,6 +30,11 @@ else()
 
     add_definitions( -DUNICODE -DWIN32 -DHAVE_STDINT_H)
 
+    #Windows XP support, 32 bit only
+    if("${CMAKE_SIZEOF_VOID_P}" EQUAL "4")
+        add_definitions(-DPSAPI_VERSION=1 -DWINVER=0x501 -D_WIN32_WINNT=0x501)
+    endif()
+
     #-c -nologo -Zm200 -Zc:wchar_t -O2 -MD -GR -GL -W3 -w34100 -w34189 -EHsc
 
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")    

@@ -27,6 +27,10 @@ contains(QT_ARCH, "i386") {
         BUILD_DIR = "temp/build32/uwebkit/release"
     }
 
+    win32 {
+    DEFINES += PSAPI_VERSION=1 WINVER=0x501 WIN32_WINNT=0x501
+    }
+
     CONFIG -= x86 x86_64
     CONFIG += x86
 
