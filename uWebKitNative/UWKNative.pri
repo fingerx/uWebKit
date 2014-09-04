@@ -28,7 +28,7 @@ contains(QT_ARCH, "i386") {
     }
 
     win32 {
-    DEFINES += PSAPI_VERSION=1 WINVER=0x501 WIN32_WINNT=0x501
+        DEFINES += PSAPI_VERSION=1 WINVER=0x501 _WIN32_WINNT=0x501
     }
 
     CONFIG -= x86 x86_64
