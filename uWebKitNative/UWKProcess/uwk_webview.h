@@ -121,7 +121,7 @@ protected:
 public:
 
     void ProcessUWKMessage(const UWKMessage& msg);
-    uint32_t GetGPUSurfaceID();
+    uintptr_t GetGPUSurfaceID();
 
     uint32_t GetID() { return id_; }
 

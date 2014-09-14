@@ -29,7 +29,7 @@ UWKRendererSharedMemory::~UWKRendererSharedMemory()
 
 void UWKRendererSharedMemory::Initialize(const UWKMessage& gpuSurfaceInfo)
 {
-    surfaceId_ = gpuSurfaceInfo.iParams[0];
+    surfaceId_ = (uint32_t) ParseGPUSurface(gpuSurfaceInfo);
 
     char name[1024];
     std::string prefix;

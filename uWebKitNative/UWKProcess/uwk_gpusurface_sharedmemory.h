@@ -37,7 +37,7 @@ public:
     void UpdateTexture(const void* image_buffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
                        uint32_t rowLength, uint32_t skipPixels, uint32_t skipRows);
 
-    uint32_t GetSurfaceID() { return surfaceId_; }
+    uintptr_t GetSurfaceID() { return (uintptr_t) surfaceId_; }
 
 };
 

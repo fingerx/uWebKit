@@ -42,6 +42,8 @@ public:
 
     static UWKRenderer* CreateRenderer(UWKBrowser* browser, void* nativeTexturePtr);
 
+    uintptr_t ParseGPUSurface(const UWKMessage& gpuSurfaceInfo);
+
     // called from main thread to delete renderer (and release graphics resources via Finalize
     // on the render thread
     void QueueRenderDelete();

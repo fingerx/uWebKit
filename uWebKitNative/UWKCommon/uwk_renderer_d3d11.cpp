@@ -27,14 +27,12 @@ void UWKRendererD3D11::SetDevice(ID3D11Device *device)
 
 void UWKRendererD3D11::Initialize(const UWKMessage &gpuSurfaceInfo)
 {
+    valid_ = false;
+
     if (!sD3D11Device_)
         return; // this is an error
 
-    // needs to handle 64 bit, also use gpuSurfaceInfo to fallback to
-    // shared memory d3d11 if problem initializing in UWKProcess
-    HANDLE sharedHandle = (HANDLE) gpuSurfaceInfo.iParams[0];
-
-    valid_ = false;
+    HANDLE sharedHandle = (HANDLE) ParseGPUSurface(gpuSurfaceInfo);
 
     // note that Unity does say "IDirect3DBaseTexture9*"
     texture_ = (ID3D11Texture2D*) nativeTexturePtr_;
@@ -47,6 +45,7 @@ void UWKRendererD3D11::Initialize(const UWKMessage &gpuSurfaceInfo)
         return;
     }
 
+    /*
     D3D11_TEXTURE2D_DESC texDesc;
     texture_->GetDesc(&texDesc);
 
@@ -78,13 +77,14 @@ void UWKRendererD3D11::Initialize(const UWKMessage &gpuSurfaceInfo)
         UWKLog::LogVerbose("texDesc.BindFlags != sharedDesc.BindFlags");
     }
 
-
     if (texDesc.Usage != sharedDesc.Usage)
     {
         UWKLog::LogVerbose("texDesc.Usage != sharedDesc.Usage");
     }
 
     UWKLog::LogVerbose("Opened shared Direct3D11 texture");
+
+    */
 
     // mark as valid
     valid_ = true;

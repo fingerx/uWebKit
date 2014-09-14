@@ -22,6 +22,7 @@ GpuSurfaceD3D11::GpuSurfaceD3D11(uint32_t maxWidth, uint32_t maxHeight)
 
     maxWidth_ = maxWidth;
     maxHeight_ = maxHeight;
+    flippedImage_ = (uint8_t*) malloc(maxWidth_ * maxHeight_ * 4);
     texture2d_ = NULL;
 
     if (!d3dDevice_)
@@ -102,8 +103,24 @@ void GpuSurfaceD3D11::UpdateTexture(const void* image_buffer)
     if (!d3dContext_ || !texture2d_)
         return;
 
-    d3dContext_->UpdateSubresource (texture2d_, 0, NULL, image_buffer, maxWidth_ * 4, 0);
+    // having to flip the image is unfortunate
+    // note that the d3d9 shared memory also has to
+    // flip
+    uint8_t* out = (unsigned char*) flippedImage_;
+    uint8_t* in = (unsigned char*) image_buffer;
 
+    uint32_t row = maxWidth_ * 4;
+
+    in += (maxHeight_ - 1) * row;
+
+    for (uint32_t y = 0; y < maxHeight_; y++)
+    {
+        memcpy(out, in, row);
+        in -= row;
+        out += row;
+    }
+
+    d3dContext_->UpdateSubresource (texture2d_, 0, NULL, flippedImage_, maxWidth_ * 4, 0);
     d3dContext_->Flush();
 
     return;
@@ -112,12 +129,14 @@ void GpuSurfaceD3D11::UpdateTexture(const void* image_buffer)
 void GpuSurfaceD3D11::UpdateTexture(const void* image_buffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
                                     uint32_t rowLength, uint32_t skipPixels, uint32_t skipRows)
 {
-    UpdateTexture(image_buffer);
+    //UpdateTexture(image_buffer);
 }
 
 GpuSurfaceD3D11::~GpuSurfaceD3D11()
 {
 
+    if (flippedImage_)
+        free(flippedImage_);
 
 }
 

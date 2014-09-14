@@ -104,3 +104,22 @@ void UWKRenderer::DeleteRenderers()
     sRendererDeleteQueue_.clear();
 
 }
+
+uintptr_t UWKRenderer::ParseGPUSurface(const UWKMessage& gpuSurfaceInfo)
+{
+    uintptr_t gpuSurface;
+    void* data;
+    uint32_t size;
+
+    UWKMessageQueue::GetData(gpuSurfaceInfo, 0, &data, size);
+
+    if (size != sizeof(uintptr_t))
+        return 0;
+
+    gpuSurface = *((uintptr_t*) data);
+
+    return gpuSurface;
+
+}
+
+

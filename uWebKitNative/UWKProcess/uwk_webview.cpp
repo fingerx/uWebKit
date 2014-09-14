@@ -368,7 +368,7 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
 
 }
 
-uint32_t WebView::GetGPUSurfaceID()
+uintptr_t WebView::GetGPUSurfaceID()
 {
     return gpuSurface_->GetSurfaceID();
 }
@@ -445,8 +445,6 @@ void WebView::timerEvent(QTimerEvent *event)
         gpuSurface_->UpdateTexture(gpuImage_.bits());
 
         rendering_ = false;
-
-
     }
 }
 

@@ -19,15 +19,14 @@ class GpuSurfaceD3D11 : public GpuSurface
 {
     uint32_t maxWidth_;
     uint32_t maxHeight_;
-    //uint32_t surfaceID_;
+    HANDLE surfaceID_;
+
+    uint8_t* flippedImage_;
 
     ID3D11Texture2D* texture2d_;
 
     static ID3D11Device* d3dDevice_;
     static ID3D11DeviceContext* d3dContext_;
-
-    // void*, won't work for 64 bit
-    HANDLE surfaceID_;
 
 public:
 
@@ -39,8 +38,7 @@ public:
     void UpdateTexture(const void* image_buffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
                        uint32_t rowLength, uint32_t skipPixels, uint32_t skipRows);
 
-    // won't work for 64 bit
-    uint32_t GetSurfaceID() { return (uint32_t) surfaceID_; }
+    uintptr_t GetSurfaceID() { return (uint32_t) surfaceID_; }
 
 };
 

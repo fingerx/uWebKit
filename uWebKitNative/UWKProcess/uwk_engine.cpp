@@ -85,7 +85,11 @@ void Engine::CreateWebView(uint32_t id, int maxWidth, int maxHeight, const QUrl&
     UWKMessage msg;
     msg.type = UMSG_GPUSURFACE_INFO;
     msg.browserID = id;
-    msg.iParams[0] = view->GetGPUSurfaceID();
+
+    uintptr_t surfaceID = view->GetGPUSurfaceID();
+    UWKMessageQueue::AllocateAndCopy(msg, 0, (const void *) &surfaceID ,sizeof(uintptr_t));
+
+    //msg.iParams[0] = view->GetGPUSurfaceID();
     UWKMessageQueue::Write(msg);
 }
 
