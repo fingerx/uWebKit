@@ -22,8 +22,8 @@ class GpuSurfaceMac : public GpuSurface
 {
     IOSurfaceRef surfaceRef_;
 
-    // uint32_t defined
-    IOSurfaceID surfaceID_;
+    // IOSurfaceID is defined as uint32_t
+    uintptr_t surfaceID_;
 
     uint32_t maxWidth_;
     uint32_t maxHeight_;
@@ -39,7 +39,7 @@ public:
     void UpdateTexture(const void* image_buffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
                        uint32_t rowLength, uint32_t skipPixels, uint32_t skipRows);
 
-    IOSurfaceID GetSurfaceID() { return surfaceID_; }
+    uintptr_t GetSurfaceID() { return surfaceID_; }
 
 };
 

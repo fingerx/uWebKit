@@ -180,7 +180,7 @@ void UWKRendererGL::InitInternal()
 
 void UWKRendererGL::Initialize(const UWKMessage &gpuSurfaceInfo)
 {
-    surfaceID_ = gpuSurfaceInfo.iParams[0];
+    surfaceID_ = (IOSurfaceID) ParseGPUSurface(gpuSurfaceInfo);
     surfaceRef_ = IOSurfaceLookup(surfaceID_);
 
     //TODO:: make sure that surfaceID_ && IOSurfaceGetID(surfaceRef_) are equal once error system is in
