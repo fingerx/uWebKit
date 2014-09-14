@@ -14,8 +14,8 @@ macx {
 
 win32 {
 
-    HEADERS += uwk_renderer_sharedmemory.h uwk_renderer_d3d9.h uwk_renderer_d3d11.h
-    SOURCES += uwk_renderer_sharedmemory.cpp uwk_renderer_d3d9.cpp uwk_renderer_d3d11.cpp
+    HEADERS += uwk_renderer_sharedmemory.h uwk_renderer_d3d9.h uwk_renderer_d3d11.h uwk_renderer_d3d11_sharedmemory.h
+    SOURCES += uwk_renderer_sharedmemory.cpp uwk_renderer_d3d9.cpp uwk_renderer_d3d11.cpp uwk_renderer_d3d11_sharedmemory.cpp
 
 }
 

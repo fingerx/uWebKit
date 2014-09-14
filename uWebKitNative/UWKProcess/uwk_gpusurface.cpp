@@ -7,10 +7,12 @@
   * for details
 *******************************************/
 
+#include "UWKCommon/uwk_config.h"
 #include "uwk_gpusurface.h"
 
 #ifdef _MSC_VER
 #include "uwk_gpusurface_d3d9.h"
+#include "uwk_gpusurface_d3d11.h"
 #else
 #include "uwk_gpusurface_mac.h"
 #endif
@@ -21,7 +23,10 @@ namespace UWK
 GpuSurface* GpuSurface::Create(int maxWidth, int maxHeight)
 {
 #ifdef _MSC_VER
-    return new GpuSurfaceD3D9(maxWidth, maxHeight);
+    if (UWKConfig::IsDirect3D9())
+        return new GpuSurfaceD3D9(maxWidth, maxHeight);
+    else
+        return new GpuSurfaceD3D11(maxWidth, maxHeight);
 #else
     return new GpuSurfaceMac(maxWidth, maxHeight);
 #endif

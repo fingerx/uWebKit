@@ -16,6 +16,8 @@
 
 #include "uwk_renderer_d3d9.h"
 #include "uwk_renderer_d3d11.h"
+#include "uwk_renderer_d3d11_sharedmemory.h"
+
 
 #else
 
@@ -58,7 +60,13 @@ UWKRenderer* UWKRenderer::CreateRenderer(UWKBrowser* browser, void* nativeTextur
     if (UWKConfig::IsDirect3D9())
         renderer = new UWKRendererD3D9(browser->GetMaxWidth(), browser->GetMaxHeight(), nativeTexturePtr);
     else
+    {
         renderer = new UWKRendererD3D11(browser->GetMaxWidth(), browser->GetMaxHeight(), nativeTexturePtr);
+
+        // slower, doesn't use share GPU resource
+        //UWKRendererD3D11SharedMemory
+
+    }
 
 #else
     UWKRenderer* renderer = new UWKRendererGL(browser->GetMaxWidth(), browser->GetMaxHeight(), nativeTexturePtr);
