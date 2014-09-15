@@ -204,6 +204,9 @@ public class UWKPlugin
     public static extern uint UWK_MsgNavigate(uint browserId, int value);
 
     [DllImport ("UWKPlugin")]
+    public static extern uint UWK_MsgSetFrameRate(uint browserId, int frameRate);
+
+    [DllImport ("UWKPlugin")]
     public static extern void UWK_MsgLoadHTML(uint browserId, IntPtr utf8HTML, IntPtr utf8BaseURL);
 
     private static string stringFromNativeUtf8(IntPtr nativeUtf8) 
@@ -374,6 +377,7 @@ public enum UWKMessageType
     UMSG_VIEW_SETALPHAMASK,
     UMSG_VIEW_SETTEXTCARETCOLOR,
     UMSG_VIEW_RELOAD,
+    UMSG_VIEW_SETFRAMERATE,
     UMSG_ASYNC_RESULT,
     UMSG_JAVASCRIPT_CONSOLE,
     UMSG_JAVASCRIPT_MESSAGE,
