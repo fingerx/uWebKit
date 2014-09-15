@@ -93,7 +93,6 @@ struct UWKMessage
 {
     UWKMessage()
     {
-
         // _this is set in C#
         _this = NULL;
 
@@ -119,7 +118,7 @@ struct UWKMessage
     // float parameters
     float fParams[16];
 
-    uint32_t dataSize[16];
+    uint32_t dataSize[16];    
     UWKManagedMemory::handle_t dataHandle[16];
 
 };

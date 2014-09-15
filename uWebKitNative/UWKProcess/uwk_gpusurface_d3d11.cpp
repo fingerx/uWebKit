@@ -16,6 +16,11 @@ namespace UWK
 ID3D11Device* GpuSurfaceD3D11::d3dDevice_ = NULL;
 ID3D11DeviceContext* GpuSurfaceD3D11::d3dContext_ = NULL;
 
+// dynamic link D3D11, so we can still run without it
+typedef HRESULT(WINAPI *LPD3D11CREATEDEVICE)(IDXGIAdapter *, D3D_DRIVER_TYPE, HMODULE, UINT32, D3D_FEATURE_LEVEL *, UINT, UINT32, ID3D11Device **, D3D_FEATURE_LEVEL *, ID3D11DeviceContext **);
+static HMODULE sHModD3D11 = NULL;
+static LPD3D11CREATEDEVICE sFnPtrD3D11CreateDevice = NULL;
+
 GpuSurfaceD3D11::GpuSurfaceD3D11(uint32_t maxWidth, uint32_t maxHeight)
 {
     HRESULT hr;
@@ -27,9 +32,27 @@ GpuSurfaceD3D11::GpuSurfaceD3D11(uint32_t maxWidth, uint32_t maxHeight)
 
     if (!d3dDevice_)
     {
+        if (sHModD3D11 == NULL)
+        {
+            sHModD3D11 = LoadLibraryA("d3d11.dll");
+            if(!sHModD3D11)
+            {
+                UWKLog::LogVerbose("Error loading d3d11.dll in UWKProcess");
+                return;
+            }
+
+            sFnPtrD3D11CreateDevice = (LPD3D11CREATEDEVICE)GetProcAddress(sHModD3D11, "D3D11CreateDevice");
+            if (!sFnPtrD3D11CreateDevice)
+            {
+                UWKLog::LogVerbose("Error getting D3D11CreateDevice function in d3d11.dll");
+                return;
+            }
+        }
+
+
         UINT createDeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
         D3D_FEATURE_LEVEL featureLevel;
-        hr = D3D11CreateDevice(
+        hr = sFnPtrD3D11CreateDevice(
                     NULL,
                     D3D_DRIVER_TYPE_HARDWARE,
                     NULL,
