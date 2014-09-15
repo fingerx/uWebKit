@@ -93,7 +93,7 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
             this,
             SLOT(handleSslErrors(QNetworkReply*, const QList<QSslError>& )));
 
-    timerId_ = startTimer(33);
+    SetFrameRate(30);
 
 #ifdef GITHUB_BUILD
     githubText_.setText(QString::fromLatin1("uWebKit GitHub Build<br>contact sales@uwebkit.com<br>for a Source License"));
@@ -104,7 +104,8 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
 
 WebView::~WebView()
 {
-    killTimer(timerId_);
+    if (timerId_)
+        killTimer(timerId_);
 
     scene_->removeItem(this);
 
@@ -365,6 +366,10 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
         QString imeText =  QtUtils::GetMessageQString(msg, 0);
         setIME(imeText);
     }
+    else if (msg.type == UMSG_VIEW_SETFRAMERATE)
+    {
+        SetFrameRate(msg.iParams[0]);
+    }
 
 }
 
@@ -624,6 +629,18 @@ void WebView::setAlphaMask(bool enabled)
     }
 
     alphaMaskEnabled_ = enabled;
+}
+
+void WebView::SetFrameRate(int framerate)
+{
+    if (timerId_ != 0)
+    {
+        killTimer(timerId_);
+        timerId_ = 0;
+    }
+
+    timerId_ = startTimer(1000/framerate);
+
 }
 
 }

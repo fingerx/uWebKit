@@ -198,6 +198,7 @@ void Engine::ProcessUWKMessage(const UWKMessage& msg)
         case UMSG_VIEW_SETZOOMFACTOR:
         case UMSG_VIEW_SETSCROLLPOSITION:
         case UMSG_IME_SETTEXT:
+        case UMSG_VIEW_SETFRAMERATE:
             if (!viewMap_.contains(msg.browserID))
                 return;
             viewMap_.find(msg.browserID).value()->ProcessUWKMessage(msg);

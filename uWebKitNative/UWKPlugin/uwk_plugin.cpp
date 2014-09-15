@@ -402,6 +402,16 @@ void EXPORT_API UWK_MsgNavigate(uint32_t id, int value)
     UWKMessageQueue::Write(msg);
 }
 
+void EXPORT_API UWK_MsgSetFrameRate(uint32_t id, int framerate)
+{
+    UWKMessage msg;
+    msg.type = UMSG_VIEW_SETFRAMERATE;
+    msg.browserID = id;
+    msg.iParams[0] = framerate;
+    UWKMessageQueue::Write(msg);
+}
+
+
 void EXPORT_API UWK_MsgSetCurrentSize(uint32_t id, int width, int height)
 {
     UWKMessage msg;

@@ -337,6 +337,16 @@ public class UWKWebView : MonoBehaviour
     }
 
     /// <summary>
+    /// Sets the framerate that the view is rendered at in the web rendering process
+    /// Default is 30fps, to set 60fps you would call view.SetFrameRate(60);
+    /// Please note that higher fps settings will increase CPU load
+    /// </summary>    
+    public void SetFrameRate(int framerate)
+    {
+        UWKPlugin.UWK_MsgSetFrameRate(ID, framerate);
+    }
+
+    /// <summary>
     /// Navigate the view to the specified URL (http://, file://, etc)
     /// </summary>
     public void LoadURL (string url)
