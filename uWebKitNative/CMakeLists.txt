@@ -65,7 +65,7 @@ else()
 
     ENDFOREACH(flag_var)       
 
-    set (UWKCOMMON_SOURCE UWKCommon/uwk_renderer_sharedmemory.cpp UWKCommon/uwk_renderer_d3d9.cpp UWKCommon/uwk_renderer_d3d11.cpp)
+    set (UWKCOMMON_SOURCE UWKCommon/uwk_renderer_sharedmemory.cpp UWKCommon/uwk_renderer_d3d9.cpp UWKCommon/uwk_renderer_d3d11.cpp UWKCommon/uwk_renderer_d3d11_sharedmemory.cpp)
     
 endif()
 
