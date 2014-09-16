@@ -40,7 +40,7 @@ public:
     virtual bool IsValid() = 0;
     virtual void UpdateTexture() = 0;
 
-    static UWKRenderer* CreateRenderer(UWKBrowser* browser, void* nativeTexturePtr);
+    static UWKRenderer* CreateRenderer(UWKBrowser* browser, uint32_t flags, void* nativeTexturePtr);
 
     uintptr_t ParseGPUSurface(const UWKMessage& gpuSurfaceInfo);
 

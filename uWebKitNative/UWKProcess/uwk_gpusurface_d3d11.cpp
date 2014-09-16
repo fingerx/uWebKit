@@ -15,6 +15,7 @@ namespace UWK
 
 ID3D11Device* GpuSurfaceD3D11::d3dDevice_ = NULL;
 ID3D11DeviceContext* GpuSurfaceD3D11::d3dContext_ = NULL;
+bool GpuSurfaceD3D11::useSharedMemoryFallback_ = false;
 
 // dynamic link D3D11, so we can still run without it
 typedef HRESULT(WINAPI *LPD3D11CREATEDEVICE)(IDXGIAdapter *, D3D_DRIVER_TYPE, HMODULE, UINT32, D3D_FEATURE_LEVEL *, UINT, UINT32, ID3D11Device **, D3D_FEATURE_LEVEL *, ID3D11DeviceContext **);
@@ -38,13 +39,16 @@ GpuSurfaceD3D11::GpuSurfaceD3D11(uint32_t maxWidth, uint32_t maxHeight)
             if(!sHModD3D11)
             {
                 UWKLog::LogVerbose("Error loading d3d11.dll in UWKProcess");
+                useSharedMemoryFallback_ = true;
                 return;
             }
 
             sFnPtrD3D11CreateDevice = (LPD3D11CREATEDEVICE)GetProcAddress(sHModD3D11, "D3D11CreateDevice");
+
             if (!sFnPtrD3D11CreateDevice)
             {
                 UWKLog::LogVerbose("Error getting D3D11CreateDevice function in d3d11.dll");
+                useSharedMemoryFallback_ = true;
                 return;
             }
         }
@@ -66,6 +70,7 @@ GpuSurfaceD3D11::GpuSurfaceD3D11(uint32_t maxWidth, uint32_t maxHeight)
         if (hr != S_OK)
         {
             UWKLog::LogVerbose("Error Creating UWKProcess Direct3D11 device, need shared memory fallback");
+            useSharedMemoryFallback_ = true;
             return;
         }
     }
@@ -91,6 +96,7 @@ GpuSurfaceD3D11::GpuSurfaceD3D11(uint32_t maxWidth, uint32_t maxHeight)
     {
         texture2d_ = NULL;
         UWKLog::LogVerbose("Error Creating UWKProcess Direct3D11 texture");
+        useSharedMemoryFallback_ = true;
         return;
     }
 
@@ -99,6 +105,7 @@ GpuSurfaceD3D11::GpuSurfaceD3D11(uint32_t maxWidth, uint32_t maxHeight)
     if (hr != S_OK)
     {
         UWKLog::LogVerbose("Error Getting IDXGIResource inteface of Direct3D11 texture");
+        useSharedMemoryFallback_ = true;
         return;
     }
 
@@ -108,6 +115,7 @@ GpuSurfaceD3D11::GpuSurfaceD3D11(uint32_t maxWidth, uint32_t maxHeight)
     if (hr != S_OK)
     {
         UWKLog::LogVerbose("Error Getting UWKProcess Direct3D11 texture shared handle");
+        useSharedMemoryFallback_ = true;
         return;
     }
 
@@ -117,7 +125,6 @@ GpuSurfaceD3D11::GpuSurfaceD3D11(uint32_t maxWidth, uint32_t maxHeight)
     memset(clear, 255, maxWidth * maxHeight * 4);
     UpdateTexture(clear);
     free(clear);
-
 
 }
 

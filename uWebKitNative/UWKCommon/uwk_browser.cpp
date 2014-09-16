@@ -59,7 +59,8 @@ void UWKBrowser::Restart()
     }
 
     DestroyRenderer();
-    CreateRenderer(nativeTexturePtr_);
+
+    CreateRenderer(flags_);
 
     UWKMessage msg;
     msg.type = UMSG_VIEW_CREATE;
@@ -91,8 +92,14 @@ void UWKBrowser::DestroyRenderer()
 
 }
 
-void UWKBrowser::CreateRenderer(void* nativeTexturePtr)
+void UWKBrowser::CreateRenderer(uint32_t flags)
+{
+    flags_ = flags;
+    UWKRenderer::CreateRenderer(this, flags, nativeTexturePtr_);
+}
+
+void UWKBrowser::SetNativeTexture(void* nativeTexturePtr)
 {
     nativeTexturePtr_ = nativeTexturePtr;
-    UWKRenderer::CreateRenderer(this, nativeTexturePtr);
 }
+

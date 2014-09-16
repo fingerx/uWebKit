@@ -24,6 +24,7 @@ class UWKBrowser
     uint32_t maxWidth_;
     uint32_t maxHeight_;
     uint32_t id_;
+    uint32_t flags_;
     bool visible_;
 
     UWKRenderer* renderer_;
@@ -43,7 +44,9 @@ public:
 
     void Restart();
 
-    void CreateRenderer(void* nativeTexturePtr);
+    void CreateRenderer(uint32_t flags);
+    void SetNativeTexture(void* nativeTexturePtr);
+
     void SetRenderer(UWKRenderer* renderer) { renderer_ = renderer; }
     UWKRenderer* GetRenderer() { return renderer_; }
     void DestroyRenderer();

@@ -81,15 +81,15 @@ void Engine::CreateWebView(uint32_t id, int maxWidth, int maxHeight, const QUrl&
     if (initialURL.toString().length() > 0)
         view->load(initialURL);
 
-
+    // GPUSurfaceInfo
     UWKMessage msg;
     msg.type = UMSG_GPUSURFACE_INFO;
     msg.browserID = id;
+    // flags
+    msg.iParams[0] = (int32_t) view->GetGPUSurfaceFlags();
 
     uintptr_t surfaceID = view->GetGPUSurfaceID();
     UWKMessageQueue::AllocateAndCopy(msg, 0, (const void *) &surfaceID ,sizeof(uintptr_t));
-
-    //msg.iParams[0] = view->GetGPUSurfaceID();
     UWKMessageQueue::Write(msg);
 }
 

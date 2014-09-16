@@ -36,8 +36,8 @@ win32 {
     PRE_TARGETDEPS += $$BUILD_DIR/UWKCommon.lib
     LIBS += $$BUILD_DIR/UWKCommon.lib
 
-    HEADERS += uwk_gpusurface_sharedmemory.h uwk_gpusurface_d3d9.h uwk_gpusurface_d3d11.h
-    SOURCES += uwk_gpusurface_sharedmemory.cpp uwk_gpusurface_d3d9.cpp uwk_gpusurface_d3d11.cpp
+    HEADERS += uwk_gpusurface_sharedmemory.h uwk_gpusurface_d3d9.h uwk_gpusurface_d3d11.h uwk_gpusurface_d3d11_sharedmemory.h
+    SOURCES += uwk_gpusurface_sharedmemory.cpp uwk_gpusurface_d3d9.cpp uwk_gpusurface_d3d11.cpp uwk_gpusurface_d3d11_sharedmemory.cpp
 
     target.path += $$PWD/../../uWebKit/Assets/StreamingAssets/uWebKit/Windows/x86
 }

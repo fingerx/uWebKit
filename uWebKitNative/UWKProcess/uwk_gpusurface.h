@@ -29,6 +29,8 @@ public:
 
     virtual uintptr_t GetSurfaceID() = 0;
 
+    virtual uint32_t GetSurfaceFlags() { return 0; }
+
     static GpuSurface* Create(int maxWidth, int maxHeight);
 
 };

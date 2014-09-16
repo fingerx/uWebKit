@@ -35,7 +35,10 @@ void UWKServer::PumpMessages()
         {
             UWKBrowser* browser = GetBrowser(msg.browserID);
             if (browser)
+            {
+                browser->CreateRenderer((uint32_t)msg.iParams[0]);
                 browser->GetRenderer()->Initialize(msg);
+            }
         }
         else if (msg.type == UMSG_LOG)
         {
@@ -76,7 +79,7 @@ UWKBrowser* UWKServer::CreateBrowser(uint32_t maxWidth, uint32_t maxHeight, std:
 
     UWKBrowser* browser = new UWKBrowser(id, maxWidth, maxHeight);
 
-    browser->CreateRenderer(nativeTexturePtr);
+    browser->SetNativeTexture(nativeTexturePtr);
 
     browserMap_.insert(std::pair<uint32_t, UWKBrowser*>(id, browser));
 

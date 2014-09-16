@@ -25,6 +25,8 @@ class GpuSurfaceD3D11 : public GpuSurface
 
     ID3D11Texture2D* texture2d_;
 
+    static bool useSharedMemoryFallback_;
+
     static ID3D11Device* d3dDevice_;
     static ID3D11DeviceContext* d3dContext_;
 
@@ -40,6 +42,7 @@ public:
 
     uintptr_t GetSurfaceID() { return (uint32_t) surfaceID_; }
 
+    static bool UseSharedMemoryFallback() { return useSharedMemoryFallback_; }
 };
 
 }

@@ -15,6 +15,7 @@
 #endif
 #if SUPPORT_D3D11
 #include "UWKCommon/uwk_renderer_d3d11.h"
+#include "UWKCommon/uwk_renderer_d3d11_sharedmemory.h"
 #include <d3d11.h>
 #endif
 
@@ -73,6 +74,7 @@ static void SetGraphicsDeviceD3D11 (ID3D11Device* device, GfxDeviceEventType eve
 {
 
     UWKRendererD3D11::SetDevice(device);
+    UWKRendererD3D11SharedMemory::SetDevice(device);
 }
 #endif // #if SUPPORT_D3D11
 

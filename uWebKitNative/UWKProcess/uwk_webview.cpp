@@ -378,6 +378,11 @@ uintptr_t WebView::GetGPUSurfaceID()
     return gpuSurface_->GetSurfaceID();
 }
 
+uint32_t WebView::GetGPUSurfaceFlags()
+{
+    return gpuSurface_->GetSurfaceFlags();
+}
+
 void WebView::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event);

@@ -123,7 +123,9 @@ public:
     void SetFrameRate(int framerate);
 
     void ProcessUWKMessage(const UWKMessage& msg);
+
     uintptr_t GetGPUSurfaceID();
+    uint32_t GetGPUSurfaceFlags();
 
     uint32_t GetID() { return id_; }
 

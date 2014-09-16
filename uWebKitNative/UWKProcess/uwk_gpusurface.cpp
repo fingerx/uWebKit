@@ -13,6 +13,7 @@
 #ifdef _MSC_VER
 #include "uwk_gpusurface_d3d9.h"
 #include "uwk_gpusurface_d3d11.h"
+#include "uwk_gpusurface_d3d11_sharedmemory.h"
 #else
 #include "uwk_gpusurface_mac.h"
 #endif
@@ -26,7 +27,27 @@ GpuSurface* GpuSurface::Create(int maxWidth, int maxHeight)
     if (UWKConfig::IsDirect3D9())
         return new GpuSurfaceD3D9(maxWidth, maxHeight);
     else
-        return new GpuSurfaceD3D11(maxWidth, maxHeight);
+    {
+        if (!GpuSurfaceD3D11::UseSharedMemoryFallback())
+        {
+            // attempt to use shared GPU Direct3D11 texture
+            GpuSurfaceD3D11* surf = new GpuSurfaceD3D11(maxWidth, maxHeight);
+
+            // if failed, fallback to shared memory
+            if (GpuSurfaceD3D11::UseSharedMemoryFallback())
+            {
+                delete surf;
+                return new GpuSurfaceD3D11SharedMemory(maxWidth, maxHeight);
+            }
+
+            return surf;
+        }
+        else
+        {
+            return new GpuSurfaceD3D11SharedMemory(maxWidth, maxHeight);
+        }
+
+    }
 #else
     return new GpuSurfaceMac(maxWidth, maxHeight);
 #endif
