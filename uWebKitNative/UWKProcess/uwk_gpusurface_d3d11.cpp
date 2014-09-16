@@ -161,6 +161,13 @@ GpuSurfaceD3D11::~GpuSurfaceD3D11()
     if (flippedImage_)
         free(flippedImage_);
 
+    if (texture2d_)
+    {
+        int refcount = (int) texture2d_->Release();
+        if (refcount)
+            UWKLog::LogVerbose("WARNING: GpuSurfaceD3D11 texture released with ref count %i", refcount);
+    }
+
 }
 
 
