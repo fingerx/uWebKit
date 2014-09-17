@@ -15,7 +15,7 @@ ID3D11Device* UWKRendererD3D11::sD3D11Device_ = NULL;
 
 UWKRendererD3D11::UWKRendererD3D11(uint32_t maxWidth, uint32_t maxHeight, void* nativeTexturePtr) :
     UWKRenderer(maxWidth, maxHeight, nativeTexturePtr),
-    texture_(NULL), sharedTexture_(NULL), valid_(false)
+    texture_(NULL), sharedTexture_(NULL), sharedHandle_(NULL), valid_(false)
 {
 
 }
@@ -25,24 +25,21 @@ void UWKRendererD3D11::SetDevice(ID3D11Device *device)
     sD3D11Device_ = device;
 }
 
-void UWKRendererD3D11::Initialize(const UWKMessage &gpuSurfaceInfo)
+bool UWKRendererD3D11::SetupSharedTexture()
 {
-    valid_ = false;
-
-    if (!sD3D11Device_)
-        return; // this is an error
-
-    HANDLE sharedHandle = (HANDLE) ParseGPUSurface(gpuSurfaceInfo);
+    if (!sD3D11Device_ || !sharedHandle_ || !nativeTexturePtr_)
+        return false; // this is an error
 
     // note that Unity does say "IDirect3DBaseTexture9*"
     texture_ = (ID3D11Texture2D*) nativeTexturePtr_;
 
-    HRESULT hr = sD3D11Device_->OpenSharedResource(sharedHandle, __uuidof(ID3D11Texture2D), (LPVOID*)&sharedTexture_);
+    HRESULT hr = sD3D11Device_->OpenSharedResource(sharedHandle_, __uuidof(ID3D11Texture2D), (LPVOID*)&sharedTexture_);
 
     if (hr != S_OK)
     {
         UWKLog::LogVerbose("Unabled to OpenSharedResource on Direct3D11 texture");
-        return;
+        sharedHandle_ = NULL;
+        return false;
     }
 
     /*
@@ -89,6 +86,17 @@ void UWKRendererD3D11::Initialize(const UWKMessage &gpuSurfaceInfo)
     // mark as valid
     valid_ = true;
 
+    return true;
+
+}
+
+void UWKRendererD3D11::Initialize(const UWKMessage &gpuSurfaceInfo)
+{
+    valid_ = false;
+
+
+    sharedHandle_ = (HANDLE) ParseGPUSurface(gpuSurfaceInfo);
+
 }
 
 
@@ -103,6 +111,11 @@ UWKRendererD3D11::~UWKRendererD3D11()
 
 void UWKRendererD3D11::UpdateTexture()
 {
+    if (!valid_ && sharedHandle_)
+    {
+        SetupSharedTexture();
+    }
+
     if (!valid_ || !texture_ || !sharedTexture_)
         return;
 

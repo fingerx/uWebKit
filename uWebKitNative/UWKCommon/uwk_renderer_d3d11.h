@@ -20,9 +20,12 @@ class UWKRendererD3D11 : public UWKRenderer
 
     ID3D11Texture2D* texture_;
     ID3D11Texture2D* sharedTexture_;
+    HANDLE sharedHandle_;
     bool valid_;
 
     static ID3D11Device* sD3D11Device_;
+
+    bool SetupSharedTexture();
 
 public:
 
