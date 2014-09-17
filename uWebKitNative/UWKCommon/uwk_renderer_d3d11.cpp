@@ -104,7 +104,10 @@ UWKRendererD3D11::~UWKRendererD3D11()
 {
     if (valid_)
     {
-
+        if (sharedTexture_)
+        {
+           sharedTexture_->Release();
+        }
     }
 }
 
@@ -120,10 +123,9 @@ void UWKRendererD3D11::UpdateTexture()
         return;
 
     ID3D11DeviceContext* ctx = NULL;
+
     sD3D11Device_->GetImmediateContext (&ctx);
-
     ctx->CopyResource(texture_, sharedTexture_);
-
     ctx->Release();
 }
 
