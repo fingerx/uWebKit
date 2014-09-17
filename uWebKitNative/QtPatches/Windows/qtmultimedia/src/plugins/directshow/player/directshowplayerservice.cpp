@@ -63,6 +63,48 @@
 
 Q_GLOBAL_STATIC(DirectShowEventLoop, qt_directShowEventLoop)
 
+#include <comdef.h>
+#include <Dshow.h>
+
+// define the prototype of the class factory entry point in a COM dll
+typedef HRESULT (STDAPICALLTYPE* FN_DLLGETCLASSOBJECT)(REFCLSID clsid, REFIID iid, void** ppv);
+
+_COM_SMARTPTR_TYPEDEF(IBaseFilter, IID_IBaseFilter);
+HRESULT CreateObjectFromPath(TCHAR* pPath, REFCLSID clsid, IUnknown** ppUnk)
+{
+    // load the target DLL directly
+    HMODULE lib = LoadLibrary(pPath);
+    if (!lib)
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    // the entry point is an exported function
+    FN_DLLGETCLASSOBJECT fn = (FN_DLLGETCLASSOBJECT)GetProcAddress(lib, "DllGetClassObject");
+    if (fn == NULL)
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    // create a class factory
+    IUnknownPtr pUnk;
+    HRESULT hr = fn(clsid,  IID_IUnknown,  (void**)(IUnknown**)&pUnk);
+    if (SUCCEEDED(hr))
+    {
+        IClassFactoryPtr pCF = pUnk;
+        if (pCF == NULL)
+        {
+            hr = E_NOINTERFACE;
+        }
+        else
+        {
+            // ask the class factory to create the object
+            hr = pCF->CreateInstance(NULL, IID_IUnknown, (void**)ppUnk);
+        }
+    }
+
+    return hr;
+}
 
 // QMediaPlayer uses millisecond time units, direct show uses 100 nanosecond units.
 static const int qt_directShowTimeScale = 10000;
@@ -251,6 +293,67 @@ void DirectShowPlayerService::load(const QMediaContent &media, QIODevice *stream
         m_graphStatus = Loading;
 
         m_graph = com_new<IFilterGraph2>(CLSID_FilterGraph, iid_IFilterGraph2);
+
+        // video [uuid("EE30215D-164F-4A92-A4EB-9D4C13390F9F")]
+        // audio [uuid("E8E73B6B-4CB3-44A4-BE99-4F7BCB96E491")]
+        // splitter [uuid("171252A0-8820-4AFE-9DF8-5C92B2D66B04")]
+
+        QString codecPath = QCoreApplication::applicationDirPath();
+        codecPath += QString::fromLatin1("\\codecs\\");
+
+        QString audioPath = codecPath + QString::fromLatin1("LAVAudio.ax");
+        QString videoPath = codecPath + QString::fromLatin1("LAVVideo.ax"); 
+        QString splitterPath = codecPath + QString::fromLatin1("LAVSplitter.ax");
+        
+        wchar_t* waudioPath = new wchar_t[audioPath.length() + 1];
+        memset(waudioPath, 0, sizeof(wchar_t) * audioPath.length() + 1);
+        audioPath.toWCharArray(waudioPath);
+
+        wchar_t* wvideoPath = new wchar_t[videoPath.length() + 1];
+        memset(waudioPath, 0, sizeof(wchar_t) * videoPath.length() + 1);
+        videoPath.toWCharArray(wvideoPath);
+
+        wchar_t* wsplitterPath = new wchar_t[splitterPath.length() + 1];
+        memset(wsplitterPath, 0, sizeof(wchar_t) * splitterPath.length() + 1);
+        splitterPath.toWCharArray(wsplitterPath);
+
+        CLSID  video_clsid;
+        wchar_t* video_clsid_str = L"{EE30215D-164F-4A92-A4EB-9D4C13390F9F}";     
+        CLSIDFromString(video_clsid_str, &video_clsid);
+        
+        CLSID  audio_clsid;
+        wchar_t* audio_clsid_str = L"{E8E73B6B-4CB3-44A4-BE99-4F7BCB96E491}";     
+        CLSIDFromString(audio_clsid_str, &audio_clsid);
+
+        CLSID  splitter_clsid;
+        wchar_t* splitter_clsid_str = L"{171252A0-8820-4AFE-9DF8-5C92B2D66B04}";     
+        CLSIDFromString(splitter_clsid_str, &splitter_clsid);
+
+        IUnknownPtr pUnk;
+        HRESULT hr = CreateObjectFromPath(waudioPath, audio_clsid, &pUnk);
+        if (SUCCEEDED(hr))
+        {
+            IBaseFilterPtr pFilter = pUnk;
+            m_graph->AddFilter(pFilter, L"Private uWebKit Audio Filter");
+        }
+
+        hr = CreateObjectFromPath(wvideoPath, video_clsid, &pUnk);
+        if (SUCCEEDED(hr))
+        {
+            IBaseFilterPtr pFilter = pUnk;
+            m_graph->AddFilter(pFilter, L"Private uWebKit Video Filter");
+        }                
+
+        hr = CreateObjectFromPath(wsplitterPath, splitter_clsid, &pUnk);
+        if (SUCCEEDED(hr))
+        {
+            IBaseFilterPtr pFilter = pUnk;
+            m_graph->AddFilter(pFilter, L"Private uWebKit Splitter Filter");
+        }                
+
+        delete [] waudioPath;
+        delete [] wvideoPath;
+        delete [] wsplitterPath;
 
         if (stream)
             m_pendingTasks = SetStreamSource;
