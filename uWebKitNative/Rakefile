@@ -94,6 +94,7 @@ namespace :qt do
 
                 sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\plugins.pro .\\qtmultimedia\\src\\plugins\\plugins.pro"
                 sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\directshow\\directshow.pro .\\qtmultimedia\\src\\plugins\\directshow\\directshow.pro"
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowplayerservice.cpp .\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowplayerservice.cpp"
                 
                 # https://bugreports.qt-project.org/browse/QTBUG-39533
                 # not in Qt 5.3.1, check when upgrading
@@ -116,7 +117,7 @@ namespace :qt do
                 sh "jom -j1 module-qtwebkit install"    
             end
 
-            sh "xcopy /Y ThirdParty\\icu\\#{$UWEBKIT_BUILD_ARCH}bit\\bin\\*.dll temp\\build#{$UWEBKIT_BUILD_ARCH}\\Qt-5.3.1\\bin"                          
+            sh "xcopy /Y ThirdParty\\icu\\#{$UWEBKIT_BUILD_ARCH}bit\\bin\\*.dll temp\\build#{$UWEBKIT_BUILD_ARCH}\\Qt-5.3.1\\bin"
 
         end
 
@@ -297,6 +298,7 @@ namespace :build do
             FileUtils.cp("#{$RAKE_ROOT}/ThirdParty/msvc10_#{bits}/msvcr100.dll", $UWKPROCESS_DEPLOY_DIR)
 
             FileUtils.cp_r($UWKPROCESS_DEPLOY_DIR, $UWKPROCESS_DIR)
+            FileUtils.cp_r("ThirdParty\\codecs\\#{$UWEBKIT_BUILD_ARCH}bit", "#{$UWKPROCESS_DIR}\\#{archdir}\\codecs")
 
             puts "\nuWebKit Native Plugin Built"
             puts "\nYou may now open the uWebKit Unity project in the root of your source checkout"
