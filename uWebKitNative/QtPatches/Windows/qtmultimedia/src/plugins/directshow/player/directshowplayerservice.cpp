@@ -70,20 +70,20 @@ Q_GLOBAL_STATIC(DirectShowEventLoop, qt_directShowEventLoop)
 typedef HRESULT (STDAPICALLTYPE* FN_DLLGETCLASSOBJECT)(REFCLSID clsid, REFIID iid, void** ppv);
 
 _COM_SMARTPTR_TYPEDEF(IBaseFilter, IID_IBaseFilter);
-HRESULT CreateObjectFromPath(TCHAR* pPath, REFCLSID clsid, IUnknown** ppUnk)
+static int CreateObjectFromPath(TCHAR* pPath, REFCLSID clsid, IUnknown** ppUnk)
 {
     // load the target DLL directly
     HMODULE lib = LoadLibrary(pPath);
     if (!lib)
     {
-        return HRESULT_FROM_WIN32(GetLastError());
+        return -1;
     }
 
     // the entry point is an exported function
     FN_DLLGETCLASSOBJECT fn = (FN_DLLGETCLASSOBJECT)GetProcAddress(lib, "DllGetClassObject");
     if (fn == NULL)
     {
-        return HRESULT_FROM_WIN32(GetLastError());
+        return -2;
     }
 
     // create a class factory
@@ -94,16 +94,90 @@ HRESULT CreateObjectFromPath(TCHAR* pPath, REFCLSID clsid, IUnknown** ppUnk)
         IClassFactoryPtr pCF = pUnk;
         if (pCF == NULL)
         {
-            hr = E_NOINTERFACE;
+            return -4;
         }
         else
         {
             // ask the class factory to create the object
             hr = pCF->CreateInstance(NULL, IID_IUnknown, (void**)ppUnk);
+            if (!SUCCEEDED(hr))
+                return -5;
         }
     }
+    else
+    {
+        return -3;
+    }
 
-    return hr;
+    return 0;
+}
+
+static void AddVideoFiltersToGraph(IFilterGraph2* graph)
+{
+    // video [uuid("EE30215D-164F-4A92-A4EB-9D4C13390F9F")]
+    // audio [uuid("E8E73B6B-4CB3-44A4-BE99-4F7BCB96E491")]
+    // splitter [uuid("171252A0-8820-4AFE-9DF8-5C92B2D66B04")]
+
+    TCHAR currentdir[MAX_PATH];
+    GetCurrentDirectory(MAX_PATH, currentdir);
+
+    QString codecPath = QCoreApplication::applicationDirPath();
+    codecPath += QString::fromLatin1("/codecs/");
+
+    wchar_t* wcodecPath = (wchar_t*) codecPath.utf16();
+ 
+    SetCurrentDirectory(wcodecPath);
+
+    QString audioPath = codecPath + QString::fromLatin1("LAVAudio.ax");
+    QString videoPath = codecPath + QString::fromLatin1("LAVVideo.ax"); 
+    QString splitterPath = codecPath + QString::fromLatin1("LAVSplitter.ax");
+
+    wchar_t* waudioPath = (wchar_t*) audioPath.utf16();
+    wchar_t* wvideoPath = (wchar_t*) videoPath.utf16();
+    wchar_t* wsplitterPath = (wchar_t*) splitterPath.utf16();
+
+    CLSID  video_clsid;
+    wchar_t* video_clsid_str = L"{EE30215D-164F-4A92-A4EB-9D4C13390F9F}";     
+    CLSIDFromString(video_clsid_str, &video_clsid);
+    
+    CLSID  audio_clsid;
+    wchar_t* audio_clsid_str = L"{E8E73B6B-4CB3-44A4-BE99-4F7BCB96E491}";     
+    CLSIDFromString(audio_clsid_str, &audio_clsid);
+
+    CLSID  splitter_clsid;
+    wchar_t* splitter_clsid_str = L"{171252A0-8820-4AFE-9DF8-5C92B2D66B04}";     
+    CLSIDFromString(splitter_clsid_str, &splitter_clsid);
+
+    IUnknownPtr pUnk;
+
+    int scode = CreateObjectFromPath(wsplitterPath, splitter_clsid, &pUnk);
+    if (!scode)
+    {
+        graph->AddFilter((IBaseFilterPtr) pUnk, L"Private uWebKit Splitter Filter");        
+    }                
+
+    int vcode = CreateObjectFromPath(wvideoPath, video_clsid, &pUnk);
+    if (!vcode)
+    {
+        graph->AddFilter((IBaseFilterPtr) pUnk, L"Private uWebKit Video Filter");
+    }                
+
+    int acode = CreateObjectFromPath(waudioPath, audio_clsid, &pUnk);
+    if (!acode)
+    { 
+        graph->AddFilter((IBaseFilterPtr) pUnk, L"Private uWebKit Audio Filter");
+    }
+
+    /*
+    FILE* f = fopen("C:\\Dev\\DebugVideo.txt", "w");
+
+    static int counter = 0; 
+    fprintf(f, "%s %i %i %i %i", codecPath.toLatin1().data(), scode, vcode, acode, counter++);
+    fclose(f);
+    */
+    
+    SetCurrentDirectory(currentdir);
+
 }
 
 // QMediaPlayer uses millisecond time units, direct show uses 100 nanosecond units.
@@ -294,67 +368,8 @@ void DirectShowPlayerService::load(const QMediaContent &media, QIODevice *stream
 
         m_graph = com_new<IFilterGraph2>(CLSID_FilterGraph, iid_IFilterGraph2);
 
-        // video [uuid("EE30215D-164F-4A92-A4EB-9D4C13390F9F")]
-        // audio [uuid("E8E73B6B-4CB3-44A4-BE99-4F7BCB96E491")]
-        // splitter [uuid("171252A0-8820-4AFE-9DF8-5C92B2D66B04")]
-
-        QString codecPath = QCoreApplication::applicationDirPath();
-        codecPath += QString::fromLatin1("\\codecs\\");
-
-        QString audioPath = codecPath + QString::fromLatin1("LAVAudio.ax");
-        QString videoPath = codecPath + QString::fromLatin1("LAVVideo.ax"); 
-        QString splitterPath = codecPath + QString::fromLatin1("LAVSplitter.ax");
-        
-        wchar_t* waudioPath = new wchar_t[audioPath.length() + 1];
-        memset(waudioPath, 0, sizeof(wchar_t) * audioPath.length() + 1);
-        audioPath.toWCharArray(waudioPath);
-
-        wchar_t* wvideoPath = new wchar_t[videoPath.length() + 1];
-        memset(waudioPath, 0, sizeof(wchar_t) * videoPath.length() + 1);
-        videoPath.toWCharArray(wvideoPath);
-
-        wchar_t* wsplitterPath = new wchar_t[splitterPath.length() + 1];
-        memset(wsplitterPath, 0, sizeof(wchar_t) * splitterPath.length() + 1);
-        splitterPath.toWCharArray(wsplitterPath);
-
-        CLSID  video_clsid;
-        wchar_t* video_clsid_str = L"{EE30215D-164F-4A92-A4EB-9D4C13390F9F}";     
-        CLSIDFromString(video_clsid_str, &video_clsid);
-        
-        CLSID  audio_clsid;
-        wchar_t* audio_clsid_str = L"{E8E73B6B-4CB3-44A4-BE99-4F7BCB96E491}";     
-        CLSIDFromString(audio_clsid_str, &audio_clsid);
-
-        CLSID  splitter_clsid;
-        wchar_t* splitter_clsid_str = L"{171252A0-8820-4AFE-9DF8-5C92B2D66B04}";     
-        CLSIDFromString(splitter_clsid_str, &splitter_clsid);
-
-        IUnknownPtr pUnk;
-        HRESULT hr = CreateObjectFromPath(waudioPath, audio_clsid, &pUnk);
-        if (SUCCEEDED(hr))
-        {
-            IBaseFilterPtr pFilter = pUnk;
-            m_graph->AddFilter(pFilter, L"Private uWebKit Audio Filter");
-        }
-
-        hr = CreateObjectFromPath(wvideoPath, video_clsid, &pUnk);
-        if (SUCCEEDED(hr))
-        {
-            IBaseFilterPtr pFilter = pUnk;
-            m_graph->AddFilter(pFilter, L"Private uWebKit Video Filter");
-        }                
-
-        hr = CreateObjectFromPath(wsplitterPath, splitter_clsid, &pUnk);
-        if (SUCCEEDED(hr))
-        {
-            IBaseFilterPtr pFilter = pUnk;
-            m_graph->AddFilter(pFilter, L"Private uWebKit Splitter Filter");
-        }                
-
-        delete [] waudioPath;
-        delete [] wvideoPath;
-        delete [] wsplitterPath;
-
+        AddVideoFiltersToGraph(m_graph);
+                
         if (stream)
             m_pendingTasks = SetStreamSource;
         else
