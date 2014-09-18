@@ -159,12 +159,14 @@ static void AddVideoFiltersToGraph(IFilterGraph2* graph)
         int code = CreateObjectFromPath(dll, clsid, &pUnk);
         if (!code)
         {
-            fprintf(f, "Loaded: %s\n", dlls[i].toLatin1().data());
+            if (debug)
+                fprintf(f, "Loaded: %s\n", dlls[i].toLatin1().data());
             graph->AddFilter((IBaseFilterPtr) pUnk, dll);
         }
         else
         {
-            fprintf(f, "Failed: %s %i\n", dlls[i].toLatin1().data(), code);
+            if (debug)
+                fprintf(f, "Failed: %s %i\n", dlls[i].toLatin1().data(), code);
         }
     }
 
@@ -207,8 +209,8 @@ static void AddVideoFiltersToGraph(IFilterGraph2* graph)
     dlls += codecPath + QString::fromLatin1("webmsource.dll");
     clsids += QString::fromLatin1("{ED3110F7-5211-11DF-94AF-0026B977EEAA}");
 
-    dlls += codecPath + QString::fromLatin1("webmoggsource.dll");
-    clsids += QString::fromLatin1("{ED311104-5211-11DF-94AF-0026B977EEAA}");
+    //dlls += codecPath + QString::fromLatin1("webmoggsource.dll");
+    //clsids += QString::fromLatin1("{ED311104-5211-11DF-94AF-0026B977EEAA}");
 
     dlls += codecPath + QString::fromLatin1("webmmux.dll");
     clsids += QString::fromLatin1("{ED3110F0-5211-11DF-94AF-0026B977EEAA}");
@@ -238,12 +240,15 @@ static void AddVideoFiltersToGraph(IFilterGraph2* graph)
         int code = CreateObjectFromPath(dll, clsid, &pUnk);
         if (!code)
         {
-            fprintf(f, "Loaded: %s\n", dlls[i].toLatin1().data());
+            if (debug)
+                fprintf(f, "Loaded: %s\n", dlls[i].toLatin1().data());
+            
             graph->AddFilter((IBaseFilterPtr) pUnk, dll);
         }
         else
         {
-            fprintf(f, "Failed: %s %i\n", dlls[i].toLatin1().data(), code);
+            if (debug)
+                fprintf(f, "Failed: %s %i\n", dlls[i].toLatin1().data(), code);
         }
     }
 
