@@ -114,10 +114,6 @@ static int CreateObjectFromPath(TCHAR* pPath, REFCLSID clsid, IUnknown** ppUnk)
 
 static void AddVideoFiltersToGraph(IFilterGraph2* graph)
 {
-    // video [uuid("EE30215D-164F-4A92-A4EB-9D4C13390F9F")]
-    // audio [uuid("E8E73B6B-4CB3-44A4-BE99-4F7BCB96E491")]
-    // splitter [uuid("171252A0-8820-4AFE-9DF8-5C92B2D66B04")]
-
     TCHAR currentdir[MAX_PATH];
     GetCurrentDirectory(MAX_PATH, currentdir);
 
@@ -128,57 +124,141 @@ static void AddVideoFiltersToGraph(IFilterGraph2* graph)
  
     SetCurrentDirectory(wcodecPath);
 
-    QString audioPath = codecPath + QString::fromLatin1("LAVAudio.ax");
-    QString videoPath = codecPath + QString::fromLatin1("LAVVideo.ax"); 
-    QString splitterPath = codecPath + QString::fromLatin1("LAVSplitter.ax");
-
-    wchar_t* waudioPath = (wchar_t*) audioPath.utf16();
-    wchar_t* wvideoPath = (wchar_t*) videoPath.utf16();
-    wchar_t* wsplitterPath = (wchar_t*) splitterPath.utf16();
-
-    CLSID  video_clsid;
-    wchar_t* video_clsid_str = L"{EE30215D-164F-4A92-A4EB-9D4C13390F9F}";     
-    CLSIDFromString(video_clsid_str, &video_clsid);
-    
-    CLSID  audio_clsid;
-    wchar_t* audio_clsid_str = L"{E8E73B6B-4CB3-44A4-BE99-4F7BCB96E491}";     
-    CLSIDFromString(audio_clsid_str, &audio_clsid);
-
-    CLSID  splitter_clsid;
-    wchar_t* splitter_clsid_str = L"{171252A0-8820-4AFE-9DF8-5C92B2D66B04}";     
-    CLSIDFromString(splitter_clsid_str, &splitter_clsid);
-
-    IUnknownPtr pUnk;
-
-    int scode = CreateObjectFromPath(wsplitterPath, splitter_clsid, &pUnk);
-    if (!scode)
-    {
-        graph->AddFilter((IBaseFilterPtr) pUnk, L"Private uWebKit Splitter Filter");        
-    }                
-
-    int vcode = CreateObjectFromPath(wvideoPath, video_clsid, &pUnk);
-    if (!vcode)
-    {
-        graph->AddFilter((IBaseFilterPtr) pUnk, L"Private uWebKit Video Filter");
-    }                
-
-    int acode = CreateObjectFromPath(waudioPath, audio_clsid, &pUnk);
-    if (!acode)
-    { 
-        graph->AddFilter((IBaseFilterPtr) pUnk, L"Private uWebKit Audio Filter");
-    }
-
-    /*
-    FILE* f = fopen("C:\\Dev\\DebugVideo.txt", "w");
+    bool debug = false;
 
     static int counter = 0; 
-    fprintf(f, "%s %i %i %i %i", codecPath.toLatin1().data(), scode, vcode, acode, counter++);
-    fclose(f);
-    */
+    FILE* f = NULL;
+    if (debug)
+    {
+        f = fopen("C:\\Dev\\DebugVideo.txt", "w");
+        fprintf(f, "AddVideoFiltersToGraph Run %i\n", counter++);
+    }
+
+    QStringList dlls;
+    QStringList clsids;
+
+    dlls += codecPath + QString::fromLatin1("LAVSplitter.ax");
+    clsids += QString::fromLatin1("{171252A0-8820-4AFE-9DF8-5C92B2D66B04}");
+
+    dlls += codecPath + QString::fromLatin1("LAVVideo.ax");
+    clsids += QString::fromLatin1("{EE30215D-164F-4A92-A4EB-9D4C13390F9F}");
+
+    dlls += codecPath + QString::fromLatin1("LAVAudio.ax");
+    clsids += QString::fromLatin1("{E8E73B6B-4CB3-44A4-BE99-4F7BCB96E491}");
+
+    for (int i = 0; i < dlls.length(); i++)
+    {
+        CLSID  clsid;
+        IUnknownPtr pUnk;
+        
+        wchar_t* dll = (wchar_t*) dlls[i].utf16();
+        wchar_t* clsid_str = (wchar_t*) clsids[i].utf16();
+
+        CLSIDFromString(clsid_str, &clsid);
+
+        int code = CreateObjectFromPath(dll, clsid, &pUnk);
+        if (!code)
+        {
+            fprintf(f, "Loaded: %s\n", dlls[i].toLatin1().data());
+            graph->AddFilter((IBaseFilterPtr) pUnk, dll);
+        }
+        else
+        {
+            fprintf(f, "Failed: %s %i\n", dlls[i].toLatin1().data(), code);
+        }
+    }
+
+        
+    if (debug)
+    {
+        fclose(f);
+    }
     
     SetCurrentDirectory(currentdir);
 
 }
+
+/*
+static void AddVideoFiltersToGraph(IFilterGraph2* graph)
+{
+    TCHAR currentdir[MAX_PATH];
+    GetCurrentDirectory(MAX_PATH, currentdir);
+
+    QString codecPath = QCoreApplication::applicationDirPath();
+    codecPath += QString::fromLatin1("/codecs/");
+
+    wchar_t* wcodecPath = (wchar_t*) codecPath.utf16();
+ 
+    SetCurrentDirectory(wcodecPath);
+
+    bool debug = false;
+
+    static int counter = 0; 
+     FILE* f = NULL;
+    if (debug)
+    {
+        f = fopen("C:\\Dev\\DebugVideo.txt", "w");
+        fprintf(f, "AddVideoFiltersToGraph Run %i\n", counter++);
+    }
+
+    QStringList dlls;
+    QStringList clsids;
+
+    dlls += codecPath + QString::fromLatin1("webmsource.dll");
+    clsids += QString::fromLatin1("{ED3110F7-5211-11DF-94AF-0026B977EEAA}");
+
+    dlls += codecPath + QString::fromLatin1("webmoggsource.dll");
+    clsids += QString::fromLatin1("{ED311104-5211-11DF-94AF-0026B977EEAA}");
+
+    dlls += codecPath + QString::fromLatin1("webmmux.dll");
+    clsids += QString::fromLatin1("{ED3110F0-5211-11DF-94AF-0026B977EEAA}");
+
+    dlls += codecPath + QString::fromLatin1("webmsplit.dll");
+    clsids += QString::fromLatin1("{ED3110F8-5211-11DF-94AF-0026B977EEAA}");
+
+    dlls += codecPath + QString::fromLatin1("vp8decoder.dll");
+    clsids += QString::fromLatin1("{ED3110F3-5211-11DF-94AF-0026B977EEAA}");
+    
+    dlls += codecPath + QString::fromLatin1("vp9decoder.dll");
+    clsids += QString::fromLatin1("{ED31110A-5211-11DF-94AF-0026B977EEAA}");
+
+    dlls += codecPath + QString::fromLatin1("webmvorbisdecoder.dll");
+    clsids += QString::fromLatin1("{ED311103-5211-11DF-94AF-0026B977EEAA}");
+
+    for (int i = 0; i < dlls.length(); i++)
+    {
+        CLSID  clsid;
+        IUnknownPtr pUnk;
+        
+        wchar_t* dll = (wchar_t*) dlls[i].utf16();
+        wchar_t* clsid_str = (wchar_t*) clsids[i].utf16();
+
+        CLSIDFromString(clsid_str, &clsid);
+
+        int code = CreateObjectFromPath(dll, clsid, &pUnk);
+        if (!code)
+        {
+            fprintf(f, "Loaded: %s\n", dlls[i].toLatin1().data());
+            graph->AddFilter((IBaseFilterPtr) pUnk, dll);
+        }
+        else
+        {
+            fprintf(f, "Failed: %s %i\n", dlls[i].toLatin1().data(), code);
+        }
+    }
+
+        
+    if (debug)
+    {
+        fclose(f);
+    }
+    
+    SetCurrentDirectory(currentdir);
+
+}
+*/
+
+
 
 // QMediaPlayer uses millisecond time units, direct show uses 100 nanosecond units.
 static const int qt_directShowTimeScale = 10000;
