@@ -32,7 +32,8 @@ public class FacebookExampleMenu : MonoBehaviour
 		}
 
 		brect.y += 50;
-		
+
+		if (false)
 		if (GUI.Button (brect, "View Source")) 
 		{	
 			if (gameObject.GetComponent<SourceCodePopup>() == null)

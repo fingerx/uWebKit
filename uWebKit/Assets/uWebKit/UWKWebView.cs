@@ -530,6 +530,20 @@ public class UWKWebView : MonoBehaviour
 
     }    
 
+	public void DrawTexture(Rect position, bool alphaBlend = true)
+	{
+		float tw = (float)MaxWidth;
+		float th = (float)MaxHeight;
+
+		Rect sourceRect = new Rect(0, 0, CurrentWidth, CurrentHeight);
+
+		sourceRect.x = sourceRect.x / tw ;
+		sourceRect.y =  1.0f  -  ( sourceRect.y + sourceRect.height )  / th ;
+		sourceRect.width = sourceRect.width / tw ;
+		sourceRect.height = sourceRect.height / th ;	
+
+		GUI.DrawTextureWithTexCoords ( position , WebTexture , sourceRect ,  alphaBlend );
+	}
 
     /// <summary>
     /// Sets the icon texture to the given width/height and image bytes

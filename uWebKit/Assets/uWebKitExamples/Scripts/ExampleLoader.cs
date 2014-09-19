@@ -51,7 +51,7 @@ public class ExampleLoader : MonoBehaviour
 
         // draw it
         Rect r = new Rect (x, y, view.CurrentWidth, view.CurrentHeight);
-        GUI.DrawTexture (r, view.WebTexture);
+        view.DrawTexture(r);
 
         // get the mouse coordinate
         Vector3 mousePos = Input.mousePosition;

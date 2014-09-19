@@ -72,7 +72,7 @@ public class SourceCodePopup : MonoBehaviour
 
  		Rect browserRect = new Rect(4, 4 + toolbarHeight, Width, Height);
 
- 		GUI.DrawTexture (browserRect, view.WebTexture);
+ 		view.DrawTexture(browserRect);
 		
 			
 	}

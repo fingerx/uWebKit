@@ -23,9 +23,10 @@ public class WebGUI : MonoBehaviour
         // if we have a view attached and it is visible
         if (view != null && view.Visible())
         {
+
             // draw it
             Rect r = new Rect (Position.x, Position.y, view.CurrentWidth, view.CurrentHeight);
-            GUI.DrawTexture (r, view.WebTexture);
+            view.DrawTexture (r);
 
             // if we have focus, handle input
             if (HasFocus)
