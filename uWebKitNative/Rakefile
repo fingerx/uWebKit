@@ -95,6 +95,9 @@ namespace :qt do
                 sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\plugins.pro .\\qtmultimedia\\src\\plugins\\plugins.pro"
                 sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\directshow\\directshow.pro .\\qtmultimedia\\src\\plugins\\directshow\\directshow.pro"
                 sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowplayerservice.cpp .\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowplayerservice.cpp"
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowplayerservice.h .\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowplayerservice.h"
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowmediatype.cpp .\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowmediatype.cpp"
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtwebkit\\Source\\WebCore\\platform\\graphics\\MediaPlayer.cpp .\\qtwebkit\\Source\\WebCore\\platform\\graphics\\MediaPlayer.cpp"
                 
                 # https://bugreports.qt-project.org/browse/QTBUG-39533
                 # not in Qt 5.3.1, check when upgrading
