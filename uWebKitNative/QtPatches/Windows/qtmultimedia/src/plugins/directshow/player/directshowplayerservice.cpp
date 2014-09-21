@@ -63,207 +63,445 @@
 
 Q_GLOBAL_STATIC(DirectShowEventLoop, qt_directShowEventLoop)
 
+// UWEBKIT
+
 #include <comdef.h>
 #include <Dshow.h>
 
-// define the prototype of the class factory entry point in a COM dll
-typedef HRESULT (STDAPICALLTYPE* FN_DLLGETCLASSOBJECT)(REFCLSID clsid, REFIID iid, void** ppv);
-
 _COM_SMARTPTR_TYPEDEF(IBaseFilter, IID_IBaseFilter);
-static int CreateObjectFromPath(TCHAR* pPath, REFCLSID clsid, IUnknown** ppUnk)
+_COM_SMARTPTR_TYPEDEF(IPin, __uuidof(IPin));
+_COM_SMARTPTR_TYPEDEF(IEnumPins, __uuidof(IEnumPins));
+_COM_SMARTPTR_TYPEDEF(IEnumMediaTypes, __uuidof(IEnumMediaTypes));
+
+bool DirectShowPlayerService::s_uwkVideoFailed = false;
+HMODULE DirectShowPlayerService::s_vp8DecoderDLL = NULL;
+HMODULE DirectShowPlayerService::s_vorbisDecoderDLL = NULL;
+HMODULE DirectShowPlayerService::s_webmSplitterDLL = NULL;
+DirectShowPlayerService::FN_DLLGETCLASSOBJECT DirectShowPlayerService::s_vp8DecoderGetClassObject = NULL;
+DirectShowPlayerService::FN_DLLGETCLASSOBJECT DirectShowPlayerService::s_vorbisDecoderGetClassObject = NULL;
+DirectShowPlayerService::FN_DLLGETCLASSOBJECT DirectShowPlayerService::s_webmSplitterGetClassObject = NULL;
+IClassFactory* DirectShowPlayerService::s_vp8DecoderFactory = NULL;
+IClassFactory* DirectShowPlayerService::s_vorbisDecoderFactory = NULL;
+IClassFactory* DirectShowPlayerService::s_webmSplitterFactory = NULL;
+CLSID DirectShowPlayerService::s_vp8DecoderCLSID;
+CLSID DirectShowPlayerService::s_vorbisDecoderCLSID;
+CLSID DirectShowPlayerService::s_webmSplitterCLSID;  
+
+void DirectShowPlayerService::uwkLoadCodecs()
 {
-    // load the target DLL directly
-    HMODULE lib = LoadLibrary(pPath);
-    if (!lib)
+    if (s_uwkVideoFailed)
+        return;
+
+    bool debug = false;
+    FILE* fdebug = NULL;
+
+    if (debug)
     {
-        return -1;
+        fdebug = fopen("C:\\Dev\\Debug_uwkLoadCodecs.txt", "w");
     }
 
-    // the entry point is an exported function
-    FN_DLLGETCLASSOBJECT fn = (FN_DLLGETCLASSOBJECT)GetProcAddress(lib, "DllGetClassObject");
-    if (fn == NULL)
+    QString codecPath = QCoreApplication::applicationDirPath();
+    codecPath += QString::fromLatin1("/codecs/");
+
+    // load codec dll's
+    QString vp8DecoderDLLPath = codecPath + QString::fromLatin1("vp8decoder.dll");
+    QString vorbisDecoderDLLPath = codecPath + QString::fromLatin1("webmvorbisdecoder.dll");
+    QString webmSplitterDLLPath = codecPath + QString::fromLatin1("webmsplit.dll");
+
+    s_vp8DecoderDLL = LoadLibrary( (wchar_t*) vp8DecoderDLLPath.utf16());
+    s_vorbisDecoderDLL = LoadLibrary( (wchar_t*) vorbisDecoderDLLPath.utf16());
+    s_webmSplitterDLL = LoadLibrary( (wchar_t*) webmSplitterDLLPath.utf16());
+    
+    if (!s_vp8DecoderDLL || !s_vorbisDecoderDLL || !s_webmSplitterDLL)
     {
-        return -2;
+        if (debug)
+        {
+            fprintf(fdebug, "Failed to load codec DLL\n");
+            fclose(fdebug);
+        }        
+        s_uwkVideoFailed = true;
+        return;
     }
 
-    // create a class factory
+    // look up DLLGetClassObject in each DLL
+    s_vp8DecoderGetClassObject = (FN_DLLGETCLASSOBJECT)GetProcAddress(s_vp8DecoderDLL, "DllGetClassObject");
+    s_vorbisDecoderGetClassObject = (FN_DLLGETCLASSOBJECT)GetProcAddress(s_vorbisDecoderDLL, "DllGetClassObject");
+    s_webmSplitterGetClassObject = (FN_DLLGETCLASSOBJECT)GetProcAddress(s_webmSplitterDLL, "DllGetClassObject");    
+
+    if (!s_vp8DecoderGetClassObject || !s_vorbisDecoderGetClassObject || !s_webmSplitterGetClassObject)
+    {
+        if (debug)
+        {
+            fprintf(fdebug, "Failed to get class object\n");
+            fclose(fdebug);
+        }        
+
+        s_uwkVideoFailed = true;
+        return;
+    }
+
+    QString qvp8 =  QString::fromLatin1("{ED3110F3-5211-11DF-94AF-0026B977EEAA}");
+    QString qvorbis = QString::fromLatin1("{ED311103-5211-11DF-94AF-0026B977EEAA}");
+    QString qsplitter = QString::fromLatin1("{ED3110F8-5211-11DF-94AF-0026B977EEAA");
+
+    CLSIDFromString((wchar_t*) qvp8.utf16(), &s_vp8DecoderCLSID); 
+    CLSIDFromString((wchar_t*) qvorbis.utf16(), &s_vorbisDecoderCLSID); 
+    CLSIDFromString((wchar_t*) qsplitter.utf16(), &s_webmSplitterCLSID); 
+    
+    // create class factories
+
     IUnknownPtr pUnk;
-    HRESULT hr = fn(clsid,  IID_IUnknown,  (void**)(IUnknown**)&pUnk);
-    if (SUCCEEDED(hr))
+    HRESULT hr = s_vp8DecoderGetClassObject(s_vp8DecoderCLSID,  IID_IUnknown,  (void**)(IUnknown**)&pUnk);
+    if (FAILED(hr))
     {
-        IClassFactoryPtr pCF = pUnk;
-        if (pCF == NULL)
+        if (debug)
         {
-            return -4;
-        }
-        else
-        {
-            // ask the class factory to create the object
-            hr = pCF->CreateInstance(NULL, IID_IUnknown, (void**)ppUnk);
-            if (!SUCCEEDED(hr))
-                return -5;
-        }
+            fprintf(fdebug, "Failed to create vp8 decoder factory\n");
+            fclose(fdebug);
+        }        
+
+        s_uwkVideoFailed = true;
+        return;
     }
     else
     {
-        return -3;
+        IClassFactoryPtr pCF = pUnk;
+        s_vp8DecoderFactory = pCF;
+        s_vp8DecoderFactory->AddRef();
+        
     }
 
-    return 0;
+    hr = s_vorbisDecoderGetClassObject(s_vorbisDecoderCLSID,  IID_IUnknown,  (void**)(IUnknown**)&pUnk);
+    if (FAILED(hr))
+    {
+        if (debug)
+        {
+            fprintf(fdebug, "Failed to create vorbis decoder factory\n");
+            fclose(fdebug);
+        }        
+
+        s_uwkVideoFailed = true;
+        return;
+    }
+    else
+    {
+        IClassFactoryPtr pCF = pUnk;
+        s_vorbisDecoderFactory = pCF;
+        s_vorbisDecoderFactory->AddRef();
+    }
+    
+    hr = s_webmSplitterGetClassObject(s_webmSplitterCLSID,  IID_IUnknown,  (void**)(IUnknown**)&pUnk);
+    if (FAILED(hr))
+    {
+        if (debug)
+        {
+            fprintf(fdebug, "Failed to create webmspitter factory\n");
+            fclose(fdebug);
+        }        
+
+        s_uwkVideoFailed = true;
+        return;
+    }
+    else
+    {
+        IClassFactoryPtr pCF = pUnk;
+        s_webmSplitterFactory = pCF;
+        s_webmSplitterFactory->AddRef();
+    }
+
+    if (debug)
+    {
+        fprintf(fdebug, "SUCCESS\n");
+        fclose(fdebug);
+    }
+
 }
 
-static void AddVideoFiltersToGraph(IFilterGraph2* graph)
+static void MediaTypeUtil_Destroy(AM_MEDIA_TYPE& tgt)
 {
-    TCHAR currentdir[MAX_PATH];
-    GetCurrentDirectory(MAX_PATH, currentdir);
+    CoTaskMemFree(tgt.pbFormat);
 
-    QString codecPath = QCoreApplication::applicationDirPath();
-    codecPath += QString::fromLatin1("/codecs/");
+    tgt.pbFormat = 0;
+    tgt.cbFormat = 0;
+}
 
-    wchar_t* wcodecPath = (wchar_t*) codecPath.utf16();
- 
-    SetCurrentDirectory(wcodecPath);
+static void MediaTypeUtil_Free(AM_MEDIA_TYPE* p)
+{
+    if (p)
+    {
+        MediaTypeUtil_Destroy(*p);
+        CoTaskMemFree(p);
+    }
+}
 
+static IPinPtr GraphUtil_FindPin(IBaseFilter* f, PIN_DIRECTION dir_requested)
+{
+    IEnumPinsPtr e;
+
+    HRESULT hr = f->EnumPins(&e);
+
+    if (FAILED(hr))
+        return 0;
+
+    for (;;)
+    {
+        IPinPtr p;
+
+        hr = e->Next(1, &p, 0);
+
+        if (hr != S_OK)
+            return 0;
+
+        PIN_DIRECTION dir_actual;
+
+        hr = p->QueryDirection(&dir_actual);
+
+        if (SUCCEEDED(hr) && (dir_actual == dir_requested))
+            return p;
+    }
+}
+
+static bool GraphUtil_Match(
+    IPin* pin,
+    const GUID& majortype,
+    const GUID* subtype)
+{
+
+    IEnumMediaTypesPtr e;
+
+    HRESULT hr = pin->EnumMediaTypes(&e);
+
+    if (FAILED(hr))
+        return false;
+
+    for (;;)
+    {
+        AM_MEDIA_TYPE* pmt;
+
+        hr = e->Next(1, &pmt, 0);
+
+        if (hr != S_OK)
+            return false;
+
+        const int bMajor = (pmt->majortype == majortype);
+        const int bSubtype = subtype ? (pmt->subtype == *subtype) : 1;
+
+        MediaTypeUtil_Free(pmt);
+
+        if (bMajor && bSubtype)
+            return true;
+    }
+}
+
+static IPinPtr GraphUtil_FindPin(
+    IBaseFilter* f,
+    PIN_DIRECTION dir_requested,
+    const GUID& majortype,
+    const GUID* subtype = 0)
+{
+    IEnumPinsPtr e;
+
+    HRESULT hr = f->EnumPins(&e);
+
+    if (FAILED(hr))
+        return 0;
+
+    for (;;)
+    {
+        IPinPtr p;
+
+        hr = e->Next(1, &p, 0);
+
+        if (hr != S_OK)
+            return 0;
+
+        PIN_DIRECTION dir_actual;
+
+        hr = p->QueryDirection(&dir_actual);
+
+        if (FAILED(hr) || (dir_actual != dir_requested))
+            continue;
+
+        if (GraphUtil_Match(p, majortype, subtype))
+            return p;
+    }
+}
+
+static IPinPtr GraphUtil_FindOutpin(IBaseFilter* f)
+{
+    return GraphUtil_FindPin(f, PINDIR_OUTPUT);
+}
+
+static IPinPtr GraphUtil_FindInpinVideo(IBaseFilter* f)
+{
+    return GraphUtil_FindPin(f, PINDIR_INPUT, MEDIATYPE_Video);
+}
+
+static IPinPtr GraphUtil_FindInpin(IBaseFilter* f)
+{
+    return GraphUtil_FindPin(f, PINDIR_INPUT);
+}
+
+static IPinPtr GraphUtil_FindOutpinVideo(IBaseFilter* f)
+{
+    return GraphUtil_FindPin(f, PINDIR_OUTPUT, MEDIATYPE_Video);
+}
+
+static IPinPtr GraphUtil_FindOutpinAudio(IBaseFilter* f)
+{
+    return GraphUtil_FindPin(f, PINDIR_OUTPUT, MEDIATYPE_Audio);
+}
+
+// kind = 0, unspecified
+// kind == 1 == video
+// kind == 2 == audio
+static HRESULT GraphUtil_ConnectDirect(
+    IFilterGraph* pGraph,
+    IBaseFilter* fOut,
+    IBaseFilter* fIn,
+    int kind = 0,
+    const AM_MEDIA_TYPE* pmt = NULL)
+{
+    IPin* pOut;
+
+    if (!kind)
+        pOut = GraphUtil_FindOutpin(fOut);
+    if (kind == 1)
+        pOut =  GraphUtil_FindOutpinVideo(fOut);
+    if (kind == 2)
+        pOut = GraphUtil_FindOutpinAudio(fOut);
+
+    if (!bool(pOut))
+        return -1;
+
+    const IPinPtr pIn( GraphUtil_FindInpin(fIn));
+
+    if (!bool(pIn))
+        return -2;
+
+    return pGraph->ConnectDirect(pOut, pIn, pmt);
+}
+
+bool DirectShowPlayerService::uwkAddGraphFilters()
+{
     bool debug = false;
 
-    static int counter = 0; 
-    FILE* f = NULL;
+    FILE* fdebug = NULL;
+
     if (debug)
     {
-        f = fopen("C:\\Dev\\DebugVideo.txt", "w");
-        fprintf(f, "AddVideoFiltersToGraph Run %i\n", counter++);
+        fdebug = fopen("C:\\Dev\\Debug_uwkAddGraphFilters", "w");
+
     }
-
-    QStringList dlls;
-    QStringList clsids;
-
-    dlls += codecPath + QString::fromLatin1("LAVSplitter.ax");
-    clsids += QString::fromLatin1("{171252A0-8820-4AFE-9DF8-5C92B2D66B04}");
-
-    dlls += codecPath + QString::fromLatin1("LAVVideo.ax");
-    clsids += QString::fromLatin1("{EE30215D-164F-4A92-A4EB-9D4C13390F9F}");
-
-    dlls += codecPath + QString::fromLatin1("LAVAudio.ax");
-    clsids += QString::fromLatin1("{E8E73B6B-4CB3-44A4-BE99-4F7BCB96E491}");
-
-    for (int i = 0; i < dlls.length(); i++)
-    {
-        CLSID  clsid;
-        IUnknownPtr pUnk;
-        
-        wchar_t* dll = (wchar_t*) dlls[i].utf16();
-        wchar_t* clsid_str = (wchar_t*) clsids[i].utf16();
-
-        CLSIDFromString(clsid_str, &clsid);
-
-        int code = CreateObjectFromPath(dll, clsid, &pUnk);
-        if (!code)
-        {
-            if (debug)
-                fprintf(f, "Loaded: %s\n", dlls[i].toLatin1().data());
-            graph->AddFilter((IBaseFilterPtr) pUnk, dll);
-        }
-        else
-        {
-            if (debug)
-                fprintf(f, "Failed: %s %i\n", dlls[i].toLatin1().data(), code);
-        }
-    }
-
-        
-    if (debug)
-    {
-        fclose(f);
-    }
-    
-    SetCurrentDirectory(currentdir);
-
-}
-
-/*
-static void AddVideoFiltersToGraph(IFilterGraph2* graph)
-{
-    TCHAR currentdir[MAX_PATH];
-    GetCurrentDirectory(MAX_PATH, currentdir);
-
-    QString codecPath = QCoreApplication::applicationDirPath();
-    codecPath += QString::fromLatin1("/codecs/");
-
-    wchar_t* wcodecPath = (wchar_t*) codecPath.utf16();
  
-    SetCurrentDirectory(wcodecPath);
+    if (s_uwkVideoFailed)
+    {
+        if (debug)
+        {
+            fprintf(fdebug, "s_uwkVideoFailed\n");
+            fclose(fdebug);
+        }
+        
+        return false;
+    }
 
-    bool debug = false;
-
-    static int counter = 0; 
-     FILE* f = NULL;
     if (debug)
     {
-        f = fopen("C:\\Dev\\DebugVideo.txt", "w");
-        fprintf(f, "AddVideoFiltersToGraph Run %i\n", counter++);
+        fprintf(fdebug, "Creating Filters\n");
     }
 
-    QStringList dlls;
-    QStringList clsids;
+    HRESULT hr;
+    IUnknown* pUnknown;
 
-    dlls += codecPath + QString::fromLatin1("webmsource.dll");
-    clsids += QString::fromLatin1("{ED3110F7-5211-11DF-94AF-0026B977EEAA}");
+    hr = s_vp8DecoderFactory->CreateInstance(NULL, IID_IUnknown, (void**)&pUnknown);    
 
-    //dlls += codecPath + QString::fromLatin1("webmoggsource.dll");
-    //clsids += QString::fromLatin1("{ED311104-5211-11DF-94AF-0026B977EEAA}");
-
-    dlls += codecPath + QString::fromLatin1("webmmux.dll");
-    clsids += QString::fromLatin1("{ED3110F0-5211-11DF-94AF-0026B977EEAA}");
-
-    dlls += codecPath + QString::fromLatin1("webmsplit.dll");
-    clsids += QString::fromLatin1("{ED3110F8-5211-11DF-94AF-0026B977EEAA}");
-
-    dlls += codecPath + QString::fromLatin1("vp8decoder.dll");
-    clsids += QString::fromLatin1("{ED3110F3-5211-11DF-94AF-0026B977EEAA}");
-    
-    dlls += codecPath + QString::fromLatin1("vp9decoder.dll");
-    clsids += QString::fromLatin1("{ED31110A-5211-11DF-94AF-0026B977EEAA}");
-
-    dlls += codecPath + QString::fromLatin1("webmvorbisdecoder.dll");
-    clsids += QString::fromLatin1("{ED311103-5211-11DF-94AF-0026B977EEAA}");
-
-    for (int i = 0; i < dlls.length(); i++)
+    if(FAILED(hr))
     {
-        CLSID  clsid;
-        IUnknownPtr pUnk;
-        
-        wchar_t* dll = (wchar_t*) dlls[i].utf16();
-        wchar_t* clsid_str = (wchar_t*) clsids[i].utf16();
-
-        CLSIDFromString(clsid_str, &clsid);
-
-        int code = CreateObjectFromPath(dll, clsid, &pUnk);
-        if (!code)
+        if (debug)
         {
-            if (debug)
-                fprintf(f, "Loaded: %s\n", dlls[i].toLatin1().data());
-            
-            graph->AddFilter((IBaseFilterPtr) pUnk, dll);
+            fprintf(fdebug, "Error creating vp8 decoder filter\n");
+            fclose(fdebug);
         }
-        else
-        {
-            if (debug)
-                fprintf(f, "Failed: %s %i\n", dlls[i].toLatin1().data(), code);
-        }
+
+        return false;
+    }
+    else
+    {
+        pUnknown->QueryInterface(IID_IBaseFilter, (void**)&m_vp8DecoderFilter);    
     }
 
-        
+    
+    hr = s_vorbisDecoderFactory->CreateInstance(NULL, IID_IUnknown, (void**)&pUnknown);    
+    if(FAILED(hr))
+    {
+        if (debug)
+        {
+            fprintf(fdebug, "Error creating vorbis decoder filter\n");
+            fclose(fdebug);
+        }
+
+       return false;
+    }
+    else
+    {
+        pUnknown->QueryInterface(IID_IBaseFilter, (void**)&m_vorbisDecoderFilter);    
+    }
+
+    hr = s_webmSplitterFactory->CreateInstance(NULL, IID_IUnknown, (void**)&pUnknown);    
+    if(FAILED(hr))
+    {
+        if (debug)
+        {
+            fprintf(fdebug, "Error creating splitter filter\n");
+            fclose(fdebug);
+        }
+
+        return false;    
+    }
+    else
+    {
+        pUnknown->QueryInterface(IID_IBaseFilter, (void**)&m_webmSplitterFilter);    
+    }
+    
+
     if (debug)
     {
-        fclose(f);
+        fprintf(fdebug, "Done Creating Filters\n");
     }
-    
-    SetCurrentDirectory(currentdir);
+
+
+    const IBaseFilterPtr avidecFilter(CLSID_AVIDec);
+    const IBaseFilterPtr colorFilter(CLSID_Colour);    
+
+    // add filters to graph
+
+    m_graph->AddFilter(m_vp8DecoderFilter, L"VP8 Decoder");
+    m_graph->AddFilter(m_vorbisDecoderFilter, L"Vorbis Decoder");
+    m_graph->AddFilter(m_webmSplitterFilter, L"WebM Splitter");
+
+    m_graph->AddFilter(avidecFilter, L"Avi Decompressor");
+    m_graph->AddFilter(colorFilter, L"Color Space Converter");
+
+    // connect filters
+    GraphUtil_ConnectDirect(m_graph, m_source, m_webmSplitterFilter);    
+    GraphUtil_ConnectDirect(m_graph, m_webmSplitterFilter, m_vp8DecoderFilter, 1);    
+    GraphUtil_ConnectDirect(m_graph, m_webmSplitterFilter, m_vorbisDecoderFilter, 2);    
+    GraphUtil_ConnectDirect(m_graph, m_vp8DecoderFilter, avidecFilter);    
+    GraphUtil_ConnectDirect(m_graph, avidecFilter, colorFilter);    
+    GraphUtil_ConnectDirect(m_graph, colorFilter, m_videoOutput);   
+    GraphUtil_ConnectDirect(m_graph, m_vorbisDecoderFilter, m_audioOutput);    
+
+    if (debug)
+    {
+        fprintf(fdebug, "SUCCESS\n");
+        fclose(fdebug);
+    }
+
+    return true;
 
 }
-*/
 
-
+// END UWEBKIT
 
 // QMediaPlayer uses millisecond time units, direct show uses 100 nanosecond units.
 static const int qt_directShowTimeScale = 10000;
@@ -316,6 +554,18 @@ DirectShowPlayerService::DirectShowPlayerService(QObject *parent)
     m_playerControl = new DirectShowPlayerControl(this);
     m_metaDataControl = new DirectShowMetaDataControl(this);
     m_audioEndpointControl = new DirectShowAudioEndpointControl(this);
+
+    // UWEBIT
+    if (!s_uwkVideoFailed && !s_vp8DecoderDLL)
+    {
+        uwkLoadCodecs();
+    }
+
+    m_vp8DecoderFilter = NULL;
+    m_vorbisDecoderFilter = NULL;
+    m_webmSplitterFilter = NULL;
+
+    // END UWEBKIT
 
     m_taskThread = new DirectShowPlayerServiceThread(this);
     m_taskThread->start();
@@ -453,8 +703,6 @@ void DirectShowPlayerService::load(const QMediaContent &media, QIODevice *stream
 
         m_graph = com_new<IFilterGraph2>(CLSID_FilterGraph, iid_IFilterGraph2);
 
-        AddVideoFiltersToGraph(m_graph);
-                
         if (stream)
             m_pendingTasks = SetStreamSource;
         else
@@ -486,8 +734,11 @@ void DirectShowPlayerService::doSetUrlSource(QMutexLocker *locker)
         static const GUID iid_IFileSourceFilter = {
             0x56a868a6, 0x0ad4, 0x11ce, {0xb0, 0x3a, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70} };
 
+        // UWEBKIT using CLSID_URLReader instead of clsid_WMAsfReader
+
         if (IFileSourceFilter *fileSource = com_new<IFileSourceFilter>(
-                clsid_WMAsfReader, iid_IFileSourceFilter)) {
+                CLSID_URLReader, iid_IFileSourceFilter)) {
+            
             locker->unlock();
             hr = fileSource->Load(reinterpret_cast<const OLECHAR *>(m_url.toString().utf16()), 0);
 
@@ -613,6 +864,8 @@ void DirectShowPlayerService::doRender(QMutexLocker *locker)
 
         m_pendingTasks ^= SetVideoOutput;
         m_executedTasks |= SetVideoOutput;
+
+        uwkAddGraphFilters();
     }
 
     IFilterGraph2 *graph = m_graph;

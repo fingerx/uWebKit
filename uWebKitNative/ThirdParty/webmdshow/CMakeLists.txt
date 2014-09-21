@@ -1,5 +1,9 @@
 
 
+# webmdshow and libwebm commit info for what this is based on
+# https://github.com/webmproject/webmdshow/commit/79985163b29cebbe37987a26d3802346b6ae51a9
+# https://github.com/webmproject/libwebm/commit/1156da8d29f926b6b0063974eb8a75a82ab7f9b2
+
 include_directories(common libmkvparser libvpx libogg libvorbis)
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libvpx/x86/release 
