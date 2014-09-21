@@ -279,5 +279,9 @@ if (APPLE)
 
 else()
     target_link_libraries (UWKPlugin UWKCommon Iphlpapi)
+
+    # webm directshow filters
+    add_subdirectory(ThirdParty/webmdshow)
+
 endif()
 
