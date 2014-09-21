@@ -766,6 +766,14 @@ MediaPlayer::SupportsType MediaPlayer::supportsType(const ContentType& contentTy
             return IsNotSupported;
     }
 #else
+    
+    // UWEBKIT    
+    if (contentType.type().startsWith("video/webm"))
+        return IsSupported;
+    else
+        return IsNotSupported;
+    // END UWEBKIT
+
     UNUSED_PARAM(client);
 #endif
 
