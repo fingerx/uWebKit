@@ -185,6 +185,18 @@ ULONG Filter::CNondelegating::Release()
 
 HRESULT Filter::QueryInterface(const IID& iid, void** ppv)
 {
+
+    //UWEBKIT: For some reason, unlike the vorbis decoder which is recognized
+    // as a renderer, the vp8decoder is not getting queries on the outpin for
+    // the IMediaSeeking interface.  This could be due to it not being recognized
+    // as a renderer, or some other reason.  Spent a fair amount of time
+    // trying to figure out why it wasn't recognized/queried, this method
+    // works, but may not be right.  If problems when seeking, look here :)    
+    if (iid == __uuidof(IMediaSeeking))
+    {
+        return m_outpin.QueryInterface(iid, ppv);
+    }
+
     return m_pOuter->QueryInterface(iid, ppv);
 }
 
