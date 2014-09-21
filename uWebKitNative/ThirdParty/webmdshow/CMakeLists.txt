@@ -6,9 +6,15 @@
 
 include_directories(common libmkvparser libvpx libogg libvorbis)
 
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libvpx/x86/release 
-				 ${CMAKE_CURRENT_SOURCE_DIR}/libogg/x86/release 
-				 ${CMAKE_CURRENT_SOURCE_DIR}/libvorbis/x86/release)
+if("${CMAKE_SIZEOF_VOID_P}" EQUAL "4")
+	link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libvpx/x86/release 
+				 	 ${CMAKE_CURRENT_SOURCE_DIR}/libogg/x86/release 
+				     ${CMAKE_CURRENT_SOURCE_DIR}/libvorbis/x86/release)
+ else()
+	link_directories(${CMAKE_CURRENT_SOURCE_DIR}/libvpx/x64/release 
+				 	 ${CMAKE_CURRENT_SOURCE_DIR}/libogg/x64/release 
+				     ${CMAKE_CURRENT_SOURCE_DIR}/libvorbis/x64/release)
+ endif()
 
 #libmkvparser
 
