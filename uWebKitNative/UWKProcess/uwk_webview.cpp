@@ -187,7 +187,16 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
     }
     else if (msg.type == UMSG_MOUSE_SCROLL)
     {
-        float scroll = msg.fParams[0];
+        QPoint p = graphicsView_->mapFromScene(QPoint(msg.iParams[0], msg.iParams[1]));
+        float scroll = msg.fParams[0] * 10.0f;
+
+        // necessary?
+        grabMouse();
+
+        QWheelEvent wheel(p, (int) scroll, Qt::NoButton, Qt::NoModifier);
+        QApplication::sendEvent(graphicsView_->viewport(), &wheel);
+
+/*
         QWebFrame* frame = page()->currentFrame();
         if (frame)
         {
@@ -195,7 +204,7 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
             sbv -= int(scroll * 10.0f);
             frame->setScrollBarValue(Qt::Vertical, sbv);
         }
-
+*/
     }
     else if (msg.type == UMSG_KEY_DOWN || msg.type == UMSG_KEY_UP)
     {
