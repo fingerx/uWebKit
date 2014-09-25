@@ -40,6 +40,7 @@ win32 {
     SOURCES += uwk_gpusurface_sharedmemory.cpp uwk_gpusurface_d3d9.cpp uwk_gpusurface_d3d11.cpp uwk_gpusurface_d3d11_sharedmemory.cpp
 
     target.path += $$PWD/../../uWebKit/Assets/StreamingAssets/uWebKit/Windows/x86
+
 }
 
 macx {
@@ -57,6 +58,11 @@ macx {
     PRE_TARGETDEPS += $$DESTDIR/libUWKCommon.a
 
     target.path += $$PWD/../../uWebKit/Assets/StreamingAssets/uWebKit/Mac/x86
+
+    # do not have shadow build set in QtCreator or this is never called?
+    QMAKE_POST_LINK += "$$QT_BIN_PATH/macdeployqt $$DESTDIR/UWKProcess.app"
 }
 
 INSTALLS += target
+
+

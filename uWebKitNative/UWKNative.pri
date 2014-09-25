@@ -1,3 +1,6 @@
+
+QT_BIN_PATH = $$dirname(QMAKE_QMAKE)
+
 # ensure one "debug_and_release" in CONFIG, for clarity...
 debug_and_release {
     CONFIG -= debug_and_release
