@@ -16,7 +16,8 @@ HEADERS += uwk_qt_utilities.h \
            uwk_networkaccessmanager.h \
            uwk_networkcookiejar.h \
            uwk_jsbridge_qt.h \
-           uwk_javascript_embedded.h
+           uwk_javascript_embedded.h \
+           uwk_activation.h
 
 SOURCES += main.cpp \
            uwk_qt_utilities.cpp \
@@ -28,7 +29,8 @@ SOURCES += main.cpp \
            uwk_networkcookiejar.cpp \
            uwk_gpusurface.cpp \
            uwk_jsbridge_qt.cpp \
-           uwk_javascript_embedded.cpp
+           uwk_javascript_embedded.cpp \
+           uwk_activation.cpp
 
 
 win32 {

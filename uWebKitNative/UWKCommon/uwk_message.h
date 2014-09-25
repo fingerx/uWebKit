@@ -75,7 +75,17 @@ enum UWKMessageType
     UMSG_IME_FOCUSOUT,
     UMSG_IME_SETTEXT,
     UMSG_DEV_CRASHWEBPROCESS,
-    UMSG_DEV_HANGWEBPROCESS
+    UMSG_DEV_HANGWEBPROCESS,
+    UMSG_ACTIVATION_STATE
+};
+
+enum ActivationState
+{
+    ACTIVATION_REQUIRED,
+    ACTIVATION_CHECKING,
+    ACTIVATION_VALID,
+    ACTIVATION_INVALID,
+    ACTIVATION_NEEDKEY
 };
 
 typedef void (*UWKAsyncMessageCallback)(uint32_t id, const char* utf8Value);

@@ -189,6 +189,17 @@ public class UWKCore : MonoBehaviour
             case UWKMessageType.UMSG_VIEW_REQUESTNEWVIEW:
                 view.NewViewRequested(view, UWKPlugin.GetMessageString(ref msg, 0));
                 break;
+            case UWKMessageType.UMSG_ACTIVATION_STATE:
+            #if UNITY_EDITOR        
+                if (msg.iParams[0] == 4)
+                {
+                    //EditorUtility.DisplayDialog ("uWebKit Activation Required", "Please select uWebKit/Activate from the Editor menu", "Ok");
+                    //EditorApplication.ExecuteMenuItem ("Edit/Play");
+                }
+            #endif      
+
+                break;
+
         }
 
     }

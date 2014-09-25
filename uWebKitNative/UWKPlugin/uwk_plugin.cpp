@@ -62,8 +62,6 @@ void UWKPlugin::Shutdown()
     UWKServer::Shutdown();
 }
 
-
-
 int UWKPlugin::sBetaDaysLeft_ = 0;
 bool UWKPlugin::sShutDown_ = false;
 bool UWKPlugin::sHasDisplayedBetaMessage_ = false;

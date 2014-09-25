@@ -23,7 +23,7 @@
 
 
 UWKProcessDB* UWKProcessDB::sInstance_ = NULL;
-std::string UWKProcessDB::sVersion_  = "1.02";
+std::string UWKProcessDB::sVersion_  = "1.03";
 
 UWKProcessDB::UWKProcessDB(bool server) : database_ (NULL), server_(server)
 {
@@ -500,7 +500,7 @@ bool UWKProcessDB::CreateTables()
     DropTables();
 
     // create the db info table
-    rc = sqlite3_exec(database_, "CREATE TABLE dbinfo ( version TEXT NOT NULL );", NULL, NULL, &errMsg );
+    rc = sqlite3_exec(database_, "CREATE TABLE dbinfo ( version TEXT NOT NULL, activationpid INTEGER DEFAULT 0 );", NULL, NULL, &errMsg );
     if (rc != SQLITE_OK)
     {
         SQLiteError("Error creating dbinfo table for process database: %s", errMsg);
@@ -608,6 +608,37 @@ bool UWKProcessDB::InitDB(const std::string& dbPath)
     }
 
     return true;
+
+}
+
+void UWKProcessDB::GetActivationServerPID(UWKProcessCommon::PID& pid)
+{
+    char* errMsg = NULL;
+    QueryResult result;
+
+    int rc = sqlite3_exec(database_, "SELECT activationpid FROM dbinfo", QueryCallback, &result, &errMsg );
+
+    if (rc != SQLITE_OK || result.size() != 1)
+    {
+        pid = (UWKProcessCommon::PID) 0;
+        return;
+    }
+
+    pid = (UWKProcessCommon::PID) strtoul(result[0].values[0].c_str(), NULL, 0);
+
+}
+
+void UWKProcessDB::SetActivationServerPID(const UWKProcessCommon::PID& pid)
+{
+    std::stringstream ss;
+
+    ss << "UPDATE dbinfo SET activationpid = ";
+    ss << pid;
+    ss << ";";
+    std::string sql =  ss.str();
+    ss.str(std::string());
+
+    sqlite3_exec(database_, sql.c_str(), NULL, NULL, NULL);
 
 }
 

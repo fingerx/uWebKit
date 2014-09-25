@@ -94,6 +94,8 @@ class WebView : public QGraphicsWebView
 
     void setTextCaretColor(uint32_t color) { textCaretColor_ = color; }
 
+    QStaticText activationText_;
+
 #ifdef GITHUB_BUILD
 
     QStaticText githubText_;

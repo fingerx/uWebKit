@@ -75,6 +75,9 @@ public:
 
     bool CheckProcessTimeout(const UWKProcessCommon::PID& pid, bool serverProcess, bool& terminated);
 
+    void GetActivationServerPID(UWKProcessCommon::PID& pid);
+    void SetActivationServerPID(const UWKProcessCommon::PID& pid);
+
     bool UpdateServerTimestamp(const UWKProcessCommon::PID& pid);
     bool UpdateClientTimestamp(const UWKProcessCommon::PID& pid);
 

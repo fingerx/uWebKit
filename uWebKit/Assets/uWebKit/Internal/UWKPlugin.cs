@@ -390,7 +390,8 @@ public enum UWKMessageType
     UMSG_IME_FOCUSOUT,
     UMSG_IME_SETTEXT,
     UMSG_DEV_CRASHWEBPROCESS,
-    UMSG_DEV_HANGWEBPROCESS
+    UMSG_DEV_HANGWEBPROCESS,
+    UMSG_ACTIVATION_STATE
 };
 
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
