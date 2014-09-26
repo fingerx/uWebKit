@@ -322,7 +322,7 @@ class WebBrowser : MonoBehaviour
 		{
 			checkTabs();
 			view = tabs[activeTab].View;                        
-			view.LoadURL ("https://www.youtube.com/watch?v=lXfOqY0JMng");
+			view.LoadURL ("https://www.youtube.com/embed/lXfOqY0JMng");
 		}
 
 		if (GUILayout.Button ("Unity3D", buttonStyle, width))
