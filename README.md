@@ -1,6 +1,6 @@
 
 
-#### uWebKit 2.0 is currently in open beta and the Unity package is available for testing.  For download information, please see [Getting Started with uWebKit 2.0](https://github.com/uWebKit/uWebKit/wiki/Getting-Started-with-uWebKit-2.0)
+#### uWebKit 2.0 is currently available for [purchase](http://uwebkit.com/store).  For more information, please see [Getting Started with uWebKit 2.0](https://github.com/uWebKit/uWebKit/wiki/Getting-Started-with-uWebKit-2.0)
 
 
 ### uWebKit HTML5 for Unity Pro - Source Repository
@@ -9,9 +9,9 @@
 
 This repository contains the full C++ and C# source code to uWebKit 2.0
 
-### Download uWebKit 2.0 Beta2
+### Download uWebKit 2.0 Package and Demos
 
-For download information, please see [Getting Started with uWebKit 2.0](https://github.com/uWebKit/uWebKit/wiki/Getting-Started-with-uWebKit-2.0)
+[http://uwebkit.com/download](http://uwebkit.com/download)
 
 #### Unity Forums Discussion Thread
 
@@ -21,13 +21,9 @@ Please use this Unity forum thread for uWebKit discussion [http://forum.unity3d.
 
 A robust and easy way to add HTML5 web content to your PC/Mac application.
 
-#### When will it be available?
+#### How much does it cost?
 
-uWebKit2 is currently in open beta.  However, it is stable and being used by many studios in production.  For seat purchasing information, please contact sales@uwebkit.com
-
-#### How much will it cost?
-
-uWebKit2 will be inline with other Unity assets under no-nonsense licenses for both Binary and Source licensees.  uWebKit2 is a free upgrade for all uWebKit1 license holders.  uWebKit2 has many improvements and we recommend all uWebKit1 users upgrade once available.  Please note that we will continue supporting iOS solely in the uWebKit1 product.
+uWebKit2 is licensed at $95/seat with a seat required for each project team member (programmers, artists, designers).  Please contact sales@uwebkit.com if you are interested in a source license.  uWebKit2 is a free upgrade for uWebKit1 license holders.
 
 ### uWebKit2 for Unity Pro Features:
 
