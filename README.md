@@ -1,8 +1,11 @@
-![alt uWebKit](http://www.uwebkit.com/static/downloads/uwebkit/uWebKit_FeaturePage.jpg)
-
+[![alt uWebKit](http://www.uwebkit.com/static/downloads/uwebkit/uWebKit_FeaturePage.jpg)](http://www.uwebkit.com)
 ### Download uWebKit 2.0 Package and Demos
 
 #### [http://uwebkit.com/download](http://uwebkit.com/download)
+
+#### Getting Started
+
+Please see [https://github.com/uWebKit/uWebKit/wiki/Getting-Started-with-uWebKit-2.0](https://github.com/uWebKit/uWebKit/wiki/Getting-Started-with-uWebKit-2.0)
 
 #### What is uWebKit2?
 
