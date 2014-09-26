@@ -73,7 +73,7 @@ public class ExampleLoader : MonoBehaviour
 		if (y < 0)
 			y = 0;
 				
-		GUI.BeginGroup (new Rect (x, y, buttonWidth, 600));
+		GUI.BeginGroup (new Rect (x, y, buttonWidth, Screen.height));
 		
 		Rect brect = new Rect (0, 0, buttonWidth, 60);
 		if (GUI.Button (brect, "Example 1 - Web Browser")) {
