@@ -172,19 +172,35 @@ class WebBrowser : MonoBehaviour
         if (numTabs == 0 || index >= numTabs)
             return;
 
+		bool settab = false;
+		UWKWebView aview = null;
+		if (index == activeTab)
+			settab = true;
+		else
+			aview = tabs [activeTab].View;
+		 
+
         UnityEngine.Object.Destroy(tabs[index].View);
+		tabs[index].View = null;
 
-        tabs[index].View = null;
-
-        for (int i = index; i < numTabs - 1; i++)
+		int j = 0;
+        for (int i = 0; i < numTabs; i++)
         {
-            tabs[i] = tabs[i+1];
+			if (i == index)
+				continue;
+
+            tabs[j++] = tabs[i];
         }
 
-        if (activeTab == index)
-            activeTab = 0;
+		numTabs--;
 
-        numTabs--;  
+		if (numTabs > 0) 
+		{
+			if (settab)
+				setActiveTab (0);
+			else
+				setActiveTab (findTab(aview));
+		}
 
     }
 
@@ -279,14 +295,7 @@ class WebBrowser : MonoBehaviour
         GUILayoutOption width = GUILayout.MaxWidth (128);
         
         // Bookmark Buttons
-        
-        if (GUILayout.Button ("Unity3D", buttonStyle, width))
-        {
-            checkTabs();
-            view = tabs[activeTab].View;
-            view.LoadURL ("https://www.unity3d.com");      
-        }
-        
+                
         if (GUILayout.Button ("uWebKit", buttonStyle, width))
         {
             checkTabs();
@@ -294,7 +303,7 @@ class WebBrowser : MonoBehaviour
             view.LoadURL ("http://www.uwebkit.com");
         }
 
-       if (GUILayout.Button ("GitHub", buttonStyle, width))
+        if (GUILayout.Button ("uWebKit GitHub", buttonStyle, width))
         {
             checkTabs();
             view = tabs[activeTab].View;            
@@ -309,7 +318,22 @@ class WebBrowser : MonoBehaviour
         }
         
 
-        if (GUILayout.Button ("Facebook", buttonStyle, width))
+		if (GUILayout.Button ("YouTube", buttonStyle, width))
+		{
+			checkTabs();
+			view = tabs[activeTab].View;                        
+			view.LoadURL ("https://www.youtube.com/watch?v=lXfOqY0JMng");
+		}
+
+		if (GUILayout.Button ("Unity3D", buttonStyle, width))
+		{
+			checkTabs();
+			view = tabs[activeTab].View;
+			view.LoadURL ("https://www.unity3d.com");      
+		}
+				
+		
+		if (GUILayout.Button ("Facebook", buttonStyle, width))
         {   
             checkTabs();
             view = tabs[activeTab].View;
@@ -341,16 +365,7 @@ class WebBrowser : MonoBehaviour
                 view.LoadURL ("http://www.penny-arcade.com");
             }
         }
-        
-        
-        if (GUILayout.Button ("HTML5", buttonStyle, width))
-        {
-            checkTabs();
-            view = tabs[activeTab].View;                        
-            view.LoadURL ("http://www.w3.org/html/logo");
-        }
                 
-        
         if (GUILayout.Button ("Unity Info", buttonStyle, width)) 
         {
             checkTabs();
