@@ -33,6 +33,17 @@ UWKProcessClient* UWKProcessClient::Instance()
 
 }
 
+void UWKProcessClient::GetActivationServerPID(UWKProcessCommon::PID& pid)
+{
+    UWKProcessDB::Instance()->GetActivationServerPID(pid);
+}
+
+void UWKProcessClient::SetActivationServerPID(const UWKProcessCommon::PID& pid)
+{
+    UWKProcessDB::Instance()->SetActivationServerPID(pid);
+}
+
+
 bool UWKProcessClient::Update()
 {
     // every 5 seconds update the timestamp in the process db and check for server timeout

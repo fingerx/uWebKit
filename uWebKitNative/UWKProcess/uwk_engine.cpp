@@ -14,6 +14,7 @@
 #include "uwk_networkaccessmanager.h"
 #include "uwk_qt_utilities.h"
 #include "uwk_jsbridge_qt.h"
+#include "uwk_activation.h"
 
 namespace UWK
 {
@@ -177,6 +178,12 @@ void Engine::ProcessUWKMessage(const UWKMessage& msg)
         }
     }
 
+    if (msg.type ==  UMSG_ACTIVATE)
+    {
+        Activation::Activate(QtUtils::GetMessageQString(msg, 0));
+        return;
+    }
+
     switch(msg.type)
     {
         case UMSG_MOUSE_MOVE:
@@ -199,6 +206,7 @@ void Engine::ProcessUWKMessage(const UWKMessage& msg)
         case UMSG_VIEW_SETSCROLLPOSITION:
         case UMSG_IME_SETTEXT:
         case UMSG_VIEW_SETFRAMERATE:
+        case UMSG_VIEW_SETUSERAGENT:
             if (!viewMap_.contains(msg.browserID))
                 return;
             viewMap_.find(msg.browserID).value()->ProcessUWKMessage(msg);

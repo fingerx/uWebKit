@@ -73,5 +73,13 @@ void WebPage::javaScriptConsoleMessage ( const QString &message, int lineNumber,
 
 }
 
+QString WebPage::userAgentForUrl(const QUrl & url) const
+{
+    if (userAgentOverride_.length())
+        return userAgentOverride_;
+
+    return QWebPage::userAgentForUrl(url);
+}
+
 
 }

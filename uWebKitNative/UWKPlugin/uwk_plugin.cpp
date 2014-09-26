@@ -62,8 +62,6 @@ void UWKPlugin::Shutdown()
     UWKServer::Shutdown();
 }
 
-
-
 int UWKPlugin::sBetaDaysLeft_ = 0;
 bool UWKPlugin::sShutDown_ = false;
 bool UWKPlugin::sHasDisplayedBetaMessage_ = false;
@@ -351,6 +349,29 @@ void EXPORT_API UWK_MsgLoadURL(uint32_t id, const char* utf8URL)
     UWKMessageQueue::SetString(msg, 0, url.c_str());
     UWKMessageQueue::Write(msg);
 }
+
+void EXPORT_API UWK_MsgSetUserAgent(uint32_t id, const char* utf8UserAgent)
+{
+    std::string agent = utf8UserAgent ? utf8UserAgent : "";
+
+    UWKMessage msg;
+    msg.type = UMSG_VIEW_SETUSERAGENT;
+    msg.browserID = id;
+    UWKMessageQueue::SetString(msg, 0, agent.c_str());
+    UWKMessageQueue::Write(msg);
+}
+
+
+void EXPORT_API UWK_MsgActivate(const char* utf8Key)
+{
+    std::string key = utf8Key ? utf8Key : "";
+
+    UWKMessage msg;
+    msg.type = UMSG_ACTIVATE;
+    UWKMessageQueue::SetString(msg, 0, key.c_str());
+    UWKMessageQueue::Write(msg);
+}
+
 
 void EXPORT_API UWK_MsgViewReload(uint32_t id)
 {

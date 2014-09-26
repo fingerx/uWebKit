@@ -16,6 +16,7 @@
 #include "uwk_application.h"
 #include "uwk_engine.h"
 #include "uwk_javascript_embedded.h"
+#include "uwk_activation.h"
 
 namespace UWK
 {
@@ -136,6 +137,8 @@ void UWKApplication::init()
     UWKMessageQueue::Initialize(false);
 
     Engine::Initialize();
+
+    Activation::Initialize();
 
     //33hz
     timerId_ = startTimer(33);

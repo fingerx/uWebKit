@@ -10,7 +10,7 @@
 #pragma once
 
 // Add to rake, for now this is ok, uncomment for non-expiring-beta build
-#define UWK_UNITY_BETA
+// #define UWK_UNITY_BETA
 
 class UWKUnityBeta
 {

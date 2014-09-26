@@ -189,6 +189,18 @@ public class UWKCore : MonoBehaviour
             case UWKMessageType.UMSG_VIEW_REQUESTNEWVIEW:
                 view.NewViewRequested(view, UWKPlugin.GetMessageString(ref msg, 0));
                 break;
+            case UWKMessageType.UMSG_ACTIVATION_STATE:
+            #if UNITY_EDITOR   
+	            if (msg.iParams[0] != 1 && msg.iParams[0] != 5)
+	            {
+					if (sInstance.gameObject.GetComponent<UWKActivation>() == null)
+						sInstance.gameObject.AddComponent<UWKActivation>();
+	            }
+				UWKActivation.SetActivationState(msg.iParams[0]);
+            #endif      
+
+                break;
+
         }
 
     }
@@ -220,13 +232,21 @@ public class UWKCore : MonoBehaviour
         UWKPlugin.UWK_DestroyView(view.ID);
     }
 
+    public static void SetInActivation()
+    {
+        inActivation = true;
+    }
+
+
     public static bool IMEEnabled = false;
     public static bool BetaVersion = false;
+
 
     static UWKCore sInstance = null;
 
     static int renderEventUpdateTextures = 1;
     static int renderEventShutdown = 2;
+    static bool inActivation = false;
 
     static Dictionary<uint, UWKWebView> viewLookup = new Dictionary<uint, UWKWebView>();
 

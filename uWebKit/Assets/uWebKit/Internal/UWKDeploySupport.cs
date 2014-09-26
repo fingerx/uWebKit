@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+#if !UNITY_WEBPLAYER
 
 // We don't want to add a top level "Editor" folder for the uWebKit package
 // so. we preprocess guard instead
@@ -117,4 +118,5 @@ public static class UWKDeploySupport
     }
 }
 
-#endif 
+#endif
+#endif

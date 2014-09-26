@@ -6,8 +6,6 @@
   * Please see UWEBKIT_SOURCE_LICENSE.txt in the root folder
   * for details
 *******************************************/
-
-
 #include "UWKCommon/uwk_keyboard.h"
 #include "UWKCommon/uwk_config.h"
 
@@ -22,6 +20,8 @@
 #include "uwk_jsbridge_qt.h"
 
 #include "uwk_javascript_embedded.h"
+
+#include "uwk_activation.h"
 
 namespace UWK
 {
@@ -94,6 +94,9 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
             SLOT(handleSslErrors(QNetworkReply*, const QList<QSslError>& )));
 
     SetFrameRate(30);
+
+    activationText_.setText(QString::fromLatin1("uWebKit Activation Required"));
+    activationText_.prepare(QTransform(), QFont(QString::fromLatin1("Arial"), 24));
 
 #ifdef GITHUB_BUILD
     githubText_.setText(QString::fromLatin1("uWebKit GitHub Build<br>contact sales@uwebkit.com<br>for a Source License"));
@@ -379,6 +382,10 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
     {
         SetFrameRate(msg.iParams[0]);
     }
+    else if (msg.type == UMSG_VIEW_SETUSERAGENT)
+    {
+        page_->setUserAgentOverride(QtUtils::GetMessageQString(msg, 0));
+    }
 
 }
 
@@ -448,6 +455,13 @@ void WebView::timerEvent(QTimerEvent *event)
         QPainter gpuPainter(&gpuImage_);
 
         gpuPainter.drawImage(QPoint(0, 0), pageImage_);
+
+        if (Activation::GetActivationState() == ACTIVATION_NEEDKEY || Activation::GetActivationState() == ACTIVATION_INVALID)
+        {
+            gpuImage_.fill(Qt::white);
+            gpuPainter.setPen(Qt::black);
+            gpuPainter.drawStaticText(0, 0, activationText_);
+        }
 
 #ifdef GITHUB_BUILD
 

@@ -20,9 +20,18 @@ class UWKProcessClient : public UWKProcessCommon
 public:
 
     PID parentPID_;
+
+    void GetActivationServerPID(UWKProcessCommon::PID& pid);
+    void SetActivationServerPID(const UWKProcessCommon::PID& pid);
+
+    bool Update();
+
     static UWKProcessClient* Instance();
     static bool Initialize(const PID& parentPID, const std::string& processdb);
-    bool Update();
+
+
+
+
     static void Shutdown();
 
 };
