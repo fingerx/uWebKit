@@ -27,7 +27,7 @@ Please use this Unity forum thread for uWebKit discussion [http://forum.unity3d.
 
 + Support for many HTML5 web standards including content and cookie caching, CSS3, video, and local storage
 
-+ Powerful, easy to use [WebView component](https://github.com/uWebKit/uWebKit/blob/uWebKit2-Beta/uWebKit/Assets/uWebKit/UWKWebView.cs)
++ Powerful, easy to use [WebView component](https://github.com/uWebKit/uWebKit/blob/master/uWebKit/Assets/uWebKit/UWKWebView.cs)
 
 + Javascript: evaluation with return values, bidirectional messaging using JSON, persistent Javascript Objects
 
