@@ -70,14 +70,15 @@ public class UWKActivation : MonoBehaviour
 
 		else if (activationState == 2) 
 		{
+			activating = false;
 			EditorUtility.DisplayDialog ("uWebKit Activation", "This key is invalid, please check the key and try again.\n", "Ok");
 		}
 
 		else if (activationState == 4) 
 		{
 			// no activations			
+			activating = false;
 			EditorUtility.DisplayDialog ("uWebKit Activation Failed", "Activation Count exceeded, please contact sales@uwebkit.com for more information", "Ok");
-			EditorApplication.ExecuteMenuItem ("Edit/Play");
 		}
 
 		else if (activationState == 5) 

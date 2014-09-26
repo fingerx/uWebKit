@@ -6,12 +6,11 @@
 namespace UWK
 {
 
-ActivationState Activation::activationState_ = ACTIVATION_REQUIRED;
+ActivationState Activation::activationState_ = ACTIVATION_CHECK_REQUIRED;
 int Activation::activationVersion_ = 1;
 QString Activation::activationKey_;
 ActivationRequest* Activation::request_ = NULL;
 Activation* Activation::instance_ = NULL;
-
 
 void Activation::Initialize()
 {
@@ -37,25 +36,28 @@ void Activation::Initialize()
             if (!activationKey_.length())
                 activationState_ = ACTIVATION_NEEDKEY;
             else
-                activationState_ = ACTIVATION_REQUIRED;
+                activationState_ = ACTIVATION_CHECK_REQUIRED;
         }
     }
+    if (activationState_ != ACTIVATION_CHECK_REQUIRED)
+    {
+        UWKMessage msg;
+        msg.type = UMSG_ACTIVATION_STATE;
+        msg.iParams[0] = (int) activationState_;
+        UWKMessageQueue::Write(msg);
+    }
+    else
+    {
+        //UWKLog::LogVerbose("Checking Activation");
+        DoActivationCheck();
+    }
 
-    UWKMessage msg;
-    msg.type = UMSG_ACTIVATION_STATE;
-    msg.iParams[0] = (int) activationState_;
-    UWKMessageQueue::Write(msg);
 
 }
 
-void Activation::DoActivationCheck()
+bool Activation::ActivationCheckRequired()
 {
-
-}
-
-bool Activation::ActivationRequired()
-{
-    return activationState_ == ACTIVATION_REQUIRED;
+    return activationState_ == ACTIVATION_CHECK_REQUIRED;
 }
 
 QString Activation::GetMachineID()
@@ -231,6 +233,7 @@ void Activation::replyFinished(QNetworkReply* reply)
         return;
 
     bool sendMsg = false;
+    bool updateActivationPID = false;
 
     // Reading attributes of the reply
     // e.g. the HTTP status code
@@ -258,6 +261,7 @@ void Activation::replyFinished(QNetworkReply* reply)
             {
                 write = true;
                 sendMsg = true;
+                updateActivationPID = true;
                 activationState_ = ACTIVATION_VALID;
             }
 
@@ -265,6 +269,7 @@ void Activation::replyFinished(QNetworkReply* reply)
             {
                 write = true;
                 sendMsg = true;
+                updateActivationPID = true;
                 activationState_ = ACTIVATION_VALID;
             }
 
@@ -303,8 +308,8 @@ void Activation::replyFinished(QNetworkReply* reply)
             }
             else
             {
+                updateActivationPID = true;
                 HandleError();
-                return;
             }
 
             if (write)
@@ -319,11 +324,16 @@ void Activation::replyFinished(QNetworkReply* reply)
     // Some http error received
     else
     {
+        updateActivationPID = true;
         HandleError();
-        return;
     }
 
     request_ = NULL;
+
+    if (updateActivationPID)
+    {
+        UWKProcessClient::Instance()->SetActivationServerPID( UWKProcessClient::Instance()->parentPID_);
+    }
 
     if (sendMsg == true)
     {
@@ -334,6 +344,23 @@ void Activation::replyFinished(QNetworkReply* reply)
     }
 
 }
+
+void Activation::DoActivationCheck()
+{
+    request_ = new ActivationRequest(QString::fromLatin1("CHECKKEY"));
+
+    connect(request_->manager(), SIGNAL(finished(QNetworkReply*)),
+            instance_, SLOT(replyFinished(QNetworkReply*)));
+
+    request_->addPostData(QString::fromLatin1("key"), activationKey_);
+    request_->addPostData(QString::fromLatin1("id"), GetMachineID());
+
+    request_->loadURL(QUrl(QString::fromLatin1("http://uwk.uwebkit.com/uwk/uwk_activate.php")));
+
+    connect(request_->reply(), SIGNAL(error(QNetworkReply::NetworkError)), instance_, SLOT(onError(QNetworkReply::NetworkError)));
+
+}
+
 
 void Activation::Activate(const QString& key)
 {

@@ -55,7 +55,7 @@ public:
 
     static void Initialize();
 
-    static bool ActivationRequired();
+    static bool ActivationCheckRequired();
 
     static void Activate(const QString& key);
 

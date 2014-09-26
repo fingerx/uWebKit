@@ -198,6 +198,10 @@ public class UWKCore : MonoBehaviour
                         EditorUtility.DisplayDialog ("uWebKit Activation Required", "Please select uWebKit/Activate from the Editor menu", "Ok");
                         EditorApplication.ExecuteMenuItem ("Edit/Play");
                     }
+					else
+					{
+						Debug.Log ("Activation: " + msg.iParams[0]);
+					}
                 }
 				else
 				{

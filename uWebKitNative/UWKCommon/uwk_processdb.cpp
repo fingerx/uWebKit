@@ -23,7 +23,7 @@
 
 
 UWKProcessDB* UWKProcessDB::sInstance_ = NULL;
-std::string UWKProcessDB::sVersion_  = "1.03";
+std::string UWKProcessDB::sVersion_  = "1.06";
 
 UWKProcessDB::UWKProcessDB(bool server) : database_ (NULL), server_(server)
 {
@@ -638,7 +638,13 @@ void UWKProcessDB::SetActivationServerPID(const UWKProcessCommon::PID& pid)
     std::string sql =  ss.str();
     ss.str(std::string());
 
-    sqlite3_exec(database_, sql.c_str(), NULL, NULL, NULL);
+    char* errMsg = NULL;
+    int rc = sqlite3_exec(database_, sql.c_str(), NULL, NULL, &errMsg);
+
+    if (rc != SQLITE_OK)
+    {
+        UWKLog::LogVerbose("%s", errMsg);
+    }
 
 }
 
