@@ -11,14 +11,15 @@
 
 #pragma once
 
+
+#include "UWKCommon/uwk_message.h"
+#include "uwk_activationrequest.h"
+
 #include <QtCore>
 #include <QString>
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-
-#include "UWKCommon/uwk_message.h"
-#include "uwk_activationrequest.h"
 
 
 namespace UWK
