@@ -9,6 +9,8 @@ public class FacebookExample : MonoBehaviour
     {
         webView = info.WebView;
         accessToken = info.AccessToken;
+		if (outputAccessToken)
+			Debug.Log (accessToken);
         getFriends();
     }
 
@@ -88,6 +90,7 @@ public class FacebookExample : MonoBehaviour
         request.Send();                 
     }
 
+	bool outputAccessToken = false;
     UWKWebView webView;
     string accessToken = null;
     List<FacebookFriend> friends = new List<FacebookFriend>();

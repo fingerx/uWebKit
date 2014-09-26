@@ -11,8 +11,8 @@ class WebBrowser : MonoBehaviour
 {
 
     // position and dimensions of browser 
-    public int X;
-    public int Y;
+    public int X = 0;
+    public int Y = 0;
 
     public int Width = 1024;
     public int Height = 600;
@@ -20,7 +20,7 @@ class WebBrowser : MonoBehaviour
     public bool DynamicWidth = true;
 
     // The browser skin being used
-    public GUISkin Skin;
+    public GUISkin Skin = null;
 
     void Start()
     {
@@ -625,12 +625,12 @@ class WebBrowser : MonoBehaviour
 
 
     // GUI Textures
-    public Texture2D texHeader;
-    public Texture2D texFooter;
-    public Texture2D texBack;
-    public Texture2D texForward;
-    public Texture2D texReload;
-    public Texture2D texLogo;
+    public Texture2D texHeader =  null;
+	public Texture2D texFooter =  null;
+	public Texture2D texBack =  null;
+	public Texture2D texForward =  null;
+	public Texture2D texReload =  null;
+	public Texture2D texLogo =  null;
 
     Texture2D texProgress;
     Texture2D texCloseTab;

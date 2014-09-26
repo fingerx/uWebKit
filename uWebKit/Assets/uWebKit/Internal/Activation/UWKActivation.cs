@@ -18,7 +18,6 @@ public class UWKActivation : MonoBehaviour
 	void Awake ()
 	{
 		// ensure Core is up
-		UWKCore.SetInActivation ();
 		UWKCore.Init ();
 	}
 

@@ -12,6 +12,8 @@ using System;
 public class SourceCodePopup : MonoBehaviour
 {
 
+	public static bool usePopup = false;
+
 	// the view itself
 	UWKWebView view;
 

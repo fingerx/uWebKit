@@ -231,14 +231,8 @@ public class UWKCore : MonoBehaviour
 
         UWKPlugin.UWK_DestroyView(view.ID);
     }
-
-    public static void SetInActivation()
-    {
-        inActivation = true;
-    }
-
-
-    public static bool IMEEnabled = false;
+	
+	public static bool IMEEnabled = false;
     public static bool BetaVersion = false;
 
 
@@ -246,7 +240,6 @@ public class UWKCore : MonoBehaviour
 
     static int renderEventUpdateTextures = 1;
     static int renderEventShutdown = 2;
-    static bool inActivation = false;
 
     static Dictionary<uint, UWKWebView> viewLookup = new Dictionary<uint, UWKWebView>();
 
