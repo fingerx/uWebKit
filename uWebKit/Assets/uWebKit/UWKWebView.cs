@@ -96,10 +96,15 @@ public class UWKWebView : MonoBehaviour
     /// view's current height to be equal or smaller than this value
     /// </summary>        
     public int MaxHeight = 1024;
+	
+	/// <summary>
+	/// Used to make the scroll wheel/trackpad more sensitive
+	/// </summary>        
+	public float ScrollSensitivity = 1.0f;
 
-    #endregion
-
-    /// <summary>
+	#endregion
+	
+	/// <summary>
     /// Naivation for going backwards and forwards through the UWKWebView's history
     /// view's current height to be equal or smaller than this value
     /// </summary>        
@@ -468,6 +473,8 @@ public class UWKWebView : MonoBehaviour
             #else
             scroll *= 1.2f;
             #endif
+
+			scroll *= ScrollSensitivity;
 
             UWKPlugin.UWK_MsgMouseScroll (ID, lastMouseX, lastMouseY, scroll);
         }        
