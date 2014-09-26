@@ -197,7 +197,7 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
         grabMouse();
 
         QWheelEvent wheel(p, (int) scroll, Qt::NoButton, Qt::NoModifier);
-        QApplication::sendEvent(graphicsView_->viewport(), &wheel);
+        QApplication::sendEvent(page_, &wheel);
 
 /*
         QWebFrame* frame = page()->currentFrame();

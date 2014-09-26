@@ -469,7 +469,7 @@ public class UWKWebView : MonoBehaviour
         if (scroll != 0.0f) 
         {
             #if UNITY_STANDALONE_WIN
-            scroll *= 10.0f;
+            scroll *= 15.0f;
             #else
             scroll *= 1.2f;
             #endif
