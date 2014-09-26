@@ -1,0 +1,324 @@
+
+#IMPORTANT NOTES:
+
+#Windows: IMPORTANT: Make sure sh(.exe) is not on your path, Such an error is indicated by errors like qt5-srcqtbasebinqmake.exe: command not found 
+#Windows: gdi32.lib user32.lib missing from winextras link on 5.2.1?
+#Windows: look into winqtdeploy 
+
+include RbConfig
+
+case CONFIG['host_os']
+when /mswin|windows|mingw32/i
+    $UWEBKIT_HOST_OS = "windows"
+when /darwin/i
+    $UWEBKIT_HOST_OS = "darwin"
+else
+    abort("Unknown host config: Config::CONFIG['host_os']: #{Config::CONFIG['host_os']}")
+end
+
+$UWEBKIT_BUILD_ARCH = "32"
+
+if $UWEBKIT_HOST_OS == 'darwin'
+    $numCores = Integer(`sysctl hw.ncpu | awk '{print $2}'`)
+    $QT_ARCHIVE_EXTENSION = "tar.gz"
+else
+    $numCores = ENV['NUMBER_OF_PROCESSORS'] 
+    $QT_ARCHIVE_EXTENSION = "zip"
+    if ENV['Platform'] == 'X64'
+        $UWEBKIT_BUILD_ARCH = "64"
+    end 
+end
+
+$RAKE_ROOT = File.dirname(__FILE__)
+
+# Specify the build target - Debug, Release, RelMinSize, RelWithDebug
+$UWEBKIT_BUILD_TARGET = "release" # "debug"
+
+$QT_VERSION = "5.3"
+$QT_FULL_VERSION = "5.3.1"
+
+$QT_DIR_BUILD = "temp/build#{$UWEBKIT_BUILD_ARCH}"
+$QT_DIR_PREFIX = "#{$RAKE_ROOT}/temp/build#{$UWEBKIT_BUILD_ARCH}/Qt-#{$QT_FULL_VERSION}"        
+
+$QT_DOWNLOAD_URL = "http://qtmirror.ics.com/pub/qtproject/official_releases/qt/#{$QT_VERSION}/#{$QT_FULL_VERSION}/single/qt-everywhere-opensource-src-#{$QT_FULL_VERSION}.#{$QT_ARCHIVE_EXTENSION}"
+$QT_SOURCE_ARCHIVE = "qt.#{$QT_ARCHIVE_EXTENSION}"
+$QT_DIR_SOURCE = "#{$QT_DIR_BUILD}/qt-everywhere-opensource-src-#{$QT_FULL_VERSION}"
+
+$QT_BUILD_TARGET = "release"
+#$QT_BUILD_TARGET = "debug-and-release"
+#$QT_BUILD_TARGET = "debug -no-framework -D ASSERT_DISABLED"
+#$QT_BUILD_TARGET = "debug"
+
+if $UWEBKIT_HOST_OS == 'windows'
+    ENV['QMAKESPEC'] = "win32-msvc2010"
+    ENV['PATH'] = "#{$QT_DIR_PREFIX}/bin;#{$RAKE_ROOT}/Build/Windows/Bin;" + ENV['PATH']    
+end
+
+namespace :qt do
+
+    task :download do       
+        if !File.exists?("temp/qt_source/#{$QT_SOURCE_ARCHIVE}")
+            FileUtils.mkdir_p("temp/qt_source")
+            puts "\nDownloading Qt #{$QT_VERSION}\n"
+            sh "curl -o temp/qt_source/#{$QT_SOURCE_ARCHIVE} #{$QT_DOWNLOAD_URL}"
+        end
+    end
+
+    task :build_windows => "qt:download" do
+
+        $QT_DIR_BUILD = "temp/build#{$UWEBKIT_BUILD_ARCH}"
+        $QT_DIR_PREFIX = "#{$RAKE_ROOT}/temp/build#{$UWEBKIT_BUILD_ARCH}/Qt-#{$QT_FULL_VERSION}"
+
+        FileUtils.mkdir_p($QT_DIR_BUILD)
+        
+        # We rename the original source folder to get around 260 character limit on NTFS
+        $QT_DIR_SOURCE = "#{$QT_DIR_BUILD}/qt-src"
+
+        if !File.exists?($QT_DIR_SOURCE)
+            Dir.chdir($QT_DIR_BUILD) do  
+                sh "7z x -y ../qt_source/qt.zip"
+                sh "rename qt-everywhere-opensource-src-#{$QT_FULL_VERSION} qt-src"             
+            end        
+        end
+
+        if !File.exists?($QT_DIR_PREFIX)
+            Dir.chdir($QT_DIR_SOURCE) do
+
+                # windows extras fails to build without these, remove when figure this out
+                # and remove #{libs} from the configure of course
+                libs = "-l gdi32 -l user32"
+                # this skips windeployqt
+                skip = "" #-skip qttools -skip qtgraphicaleffects -skip qtactiveqt -skip qtquick1 -skip qtscript -skip qtquickcontrols"
+
+                bits = "#{$UWEBKIT_BUILD_ARCH}bit"  
+
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\plugins.pro .\\qtmultimedia\\src\\plugins\\plugins.pro"
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\directshow\\directshow.pro .\\qtmultimedia\\src\\plugins\\directshow\\directshow.pro"
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowplayerservice.cpp .\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowplayerservice.cpp"
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowplayerservice.h .\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowplayerservice.h"
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowmediatype.cpp .\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowmediatype.cpp"
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtwebkit\\Source\\WebCore\\platform\\graphics\\MediaPlayer.cpp .\\qtwebkit\\Source\\WebCore\\platform\\graphics\\MediaPlayer.cpp"
+                
+                # https://bugreports.qt-project.org/browse/QTBUG-39533
+                # not in Qt 5.3.1, check when upgrading
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtbase\\src\\network\\access\\qnetworkreplyhttpimpl_p.h .\\qtbase\\src\\network\\access\\qnetworkreplyhttpimpl_p.h"
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtbase\\src\\network\\access\\qnetworkreplyhttpimpl.cpp .\\qtbase\\src\\network\\access\\qnetworkreplyhttpimpl.cpp"
+
+                ENV['PATH'] = "#{$RAKE_ROOT}/ThirdParty/icu/#{bits}/bin;" +  ENV['PATH'] 
+                ENV['PATH'] = "#{$RAKE_ROOT}/#{$QT_DIR_SOURCE}/gnuwin32/bin;" +  ENV['PATH'] 
+                ENV['DXSDK_DIR'] = "#{$RAKE_ROOT}\\ThirdParty\\dxsdk_june_2010\\"
+
+                config = "-prefix #{$QT_DIR_PREFIX} -#{$QT_BUILD_TARGET} -opensource -confirm-license -make-tool jom -no-wmf-backend -no-avx -no-avx2 -ltcg -platform win32-msvc2010 -icu -openssl-linked #{skip} #{libs} OPENSSL_LIBS=\"ssleay32MT.lib libeay32MT.lib user32.lib advapi32.lib gdi32.lib crypt32.lib\" -I #{$RAKE_ROOT}/Thirdparty/openssl/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/openssl/#{bits} -I #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/lib -nomake examples -nomake tests"
+
+                #windows xp support
+                if $UWEBKIT_BUILD_ARCH == "32"
+                    config = "-target xp " + config
+                end
+                #sh "configure.bat -prefix #{$QT_DIR_PREFIX} -#{$QT_BUILD_TARGET} -opensource -confirm-license -make-tool jom -no-opengl -no-angle -no-wmf-backend -no-avx -no-avx2 -ltcg -platform win32-msvc2010 -icu -openssl-linked #{skip} #{libs} OPENSSL_LIBS=\"ssleay32MT.lib libeay32MT.lib user32.lib advapi32.lib gdi32.lib crypt32.lib\" -I #{$RAKE_ROOT}/Thirdparty/openssl/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/openssl/#{bits} -I #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/lib -nomake examples -nomake tests"
+                sh "configure.bat #{config}"
+                sh "jom -j#{$numCores} module-qtwebkit"   
+                sh "jom -j1 module-qtwebkit install"    
+            end
+
+            sh "xcopy /Y ThirdParty\\icu\\#{$UWEBKIT_BUILD_ARCH}bit\\bin\\*.dll temp\\build#{$UWEBKIT_BUILD_ARCH}\\Qt-5.3.1\\bin"
+
+        end
+
+    end
+
+    task :build_osx => "qt:download" do
+
+        FileUtils.mkdir_p($QT_DIR_BUILD)        
+
+        if !File.exists?($QT_DIR_SOURCE)
+            Dir.chdir($QT_DIR_BUILD) do  
+                sh "tar -zxvf ../qt_source/#{$QT_SOURCE_ARCHIVE}"               
+            end
+        end
+
+        platform = "macx-clang"
+        if $UWEBKIT_BUILD_ARCH == "32"
+            platform = "macx-clang-32"
+        end 
+
+        if !File.exists?($QT_DIR_PREFIX)
+            Dir.chdir($QT_DIR_SOURCE) do
+
+                #patch Qt
+                sh "cp  #{$RAKE_ROOT}/QtPatches/Mac/qtbase/src/plugins/platforms/cocoa/* ./qtbase/src/plugins/platforms/cocoa"
+                sh "cp  #{$RAKE_ROOT}/QtPatches/Mac/qtbase/src/network/access/* ./qtbase/src/network/access"
+
+                sh "./configure -prefix #{$QT_DIR_PREFIX} -confirm-license -#{$QT_BUILD_TARGET} -platform #{platform} -no-c++11 -opensource -nomake examples -nomake tests"
+                sh "make -j#{$numCores} module-qtwebkit"
+                sh "make -j1 install"           
+                
+            end
+        end
+
+    end
+
+#end qt namespace
+end
+
+
+namespace :build do
+
+    task :uwebkit do
+
+        $QT_DIR_BIN = "#{$QT_DIR_PREFIX}/bin"
+
+        $UWK_BUILD_DIR = "#{$RAKE_ROOT}/temp/build#{$UWEBKIT_BUILD_ARCH}/uwebkit/#{$UWEBKIT_BUILD_TARGET}"
+
+        if $UWEBKIT_HOST_OS == 'darwin'
+
+            archfolder = "x86_64"
+            if $UWEBKIT_BUILD_ARCH == "32"
+                archfolder = "x86"
+            end
+
+            #build a fast 32bit/64bit plugin using CMake
+            pluginCMakeDir = "#{$RAKE_ROOT}/temp/build#{$UWEBKIT_BUILD_ARCH}/UWKPluginCMake"
+
+            if Dir.exists?("#{pluginCMakeDir}")
+                sh "rm -rf #{pluginCMakeDir}"
+            end
+
+            FileUtils.mkdir_p(pluginCMakeDir)
+
+            Dir.chdir(pluginCMakeDir) do
+                sh "cmake ../../../ -DCMAKE_BUILD_TYPE=#{$UWEBKIT_BUILD_TARGET}"
+                sh "make -j#{$numCores}"
+            end
+            
+            $UWKPROCESS_DEPLOY_DIR = "#{$UWK_BUILD_DIR}/UWKProcess.app"
+
+            $UWKPROCESS_DEST_APP_DIR = "#{$RAKE_ROOT}/../uWebKit/Assets/StreamingAssets/uWebKit/Mac/#{archfolder}"
+
+            $UWKPLUGIN_DEST_BUNDLE_DIR = "#{$RAKE_ROOT}/../uWebKit/Assets/Plugins/UWKPlugin.bundle"         
+
+            if Dir.exists?("#{$UWKPROCESS_DEPLOY_DIR}")
+                sh "rm -rf #{$UWKPROCESS_DEPLOY_DIR}"
+            end
+
+
+            sh "#{$QT_DIR_BIN}/qmake -r -o Makefile \"CONFIG+=#{$UWEBKIT_BUILD_TARGET}\""
+            sh "make clean && make -j#{$numCores}"
+
+            # only deploy for release build
+            if $UWEBKIT_BUILD_TARGET == 'release'
+                sh "#{$QT_DIR_BIN}/macdeployqt #{$UWKPROCESS_DEPLOY_DIR}"
+            end
+
+            if Dir.exists?("#{$UWKPLUGIN_DEST_BUNDLE_DIR}")
+                sh "rm -rf #{$UWKPLUGIN_DEST_BUNDLE_DIR}"
+            end
+
+            if Dir.exists?("#{$UWKPROCESS_DEST_APP_DIR}")
+                sh "rm -rf #{$UWKPROCESS_DEST_APP_DIR}"
+            end
+
+            FileUtils.mkdir_p($UWKPROCESS_DEST_APP_DIR)
+            FileUtils.mkdir_p($UWKPLUGIN_DEST_BUNDLE_DIR)
+
+            sh "cp -R #{$UWKPROCESS_DEPLOY_DIR} #{$UWKPROCESS_DEST_APP_DIR}"
+
+            if Dir.exists?("#{$UWKPLUGIN_DEST_BUNDLE_DIR}")
+                sh "rm -rf #{$UWKPLUGIN_DEST_BUNDLE_DIR}"
+            end
+
+            sh "cp -R #{pluginCMakeDir}/UWKPlugin.bundle #{$UWKPLUGIN_DEST_BUNDLE_DIR}"
+
+        else
+
+            $UWKPROCESS_DIR = "#{$RAKE_ROOT}/../uWebKit/Assets/StreamingAssets/uWebKit/Windows"
+            archdir = ""
+            if $UWEBKIT_BUILD_ARCH == "32"
+                archdir = "x86"
+                $UWKPROCESS_DEPLOY_DIR = "#{$RAKE_ROOT}/temp/" + archdir
+            else
+                archdir = "x86_64"
+                $UWKPROCESS_DEPLOY_DIR = "#{$RAKE_ROOT}/temp/" + archdir
+            end
+
+
+            FileUtils.rmtree($UWKPROCESS_DEPLOY_DIR)
+            if (Dir.exists?($UWKPROCESS_DEPLOY_DIR))
+                abort("Unable to clean " + $UWKPROCESS_DEPLOY_DIR + " is it in use?")  
+            end 
+
+            FileUtils.rmtree($UWKPROCESS_DIR + "/" + archdir )
+            if (Dir.exists?($UWKPROCESS_DIR + "/" + archdir))
+                abort("Unable to clean " + $UWKPROCESS_DIR + "/" + archdir + " is it in use?")  
+            end 
+
+            FileUtils.mkdir_p($UWKPROCESS_DIR)
+
+            plugin_dll = "#{$RAKE_ROOT}/../uWebKit/Assets/Plugins/" + archdir  
+
+            FileUtils.rmtree(plugin_dll)
+            if (Dir.exists?(plugin_dll))
+                abort("Unable to clean " + plugin_dll + " is it in use?")  
+            end 
+
+            FileUtils.mkdir(plugin_dll)
+
+            pluginCMakeDir = "#{$RAKE_ROOT}/temp/build#{$UWEBKIT_BUILD_ARCH}/UWKPluginCMake"
+
+            FileUtils.rmtree(pluginCMakeDir)
+            if (Dir.exists?(pluginCMakeDir))
+                abort("Unable to clean " + pluginCMakeDir + " is it in use?")  
+            end 
+
+            FileUtils.mkdir_p(pluginCMakeDir)
+
+            codecs_dir = "#{$UWKPROCESS_DIR}/#{archdir}/codecs"
+            FileUtils.rmtree(codecs_dir)
+            if (Dir.exists?(codecs_dir))
+                abort("Unable to clean " + codecs_dir + " is it in use?")  
+            end 
+
+            FileUtils.mkdir_p(codecs_dir)
+
+            Dir.chdir(pluginCMakeDir) do
+                sh "cmake ../../../ -DCMAKE_BUILD_TYPE=Release -G \"NMake Makefiles JOM\""
+                sh "jom -j#{$numCores}"
+            end
+
+            plugin_dll += "/UWKPlugin.dll"
+
+            FileUtils.cp("#{pluginCMakeDir}/UWKPlugin.dll", plugin_dll)
+
+            FileUtils.cp("#{pluginCMakeDir}/ThirdParty/webmdshow/vp8decoder.dll", codecs_dir)
+            FileUtils.cp("#{pluginCMakeDir}/ThirdParty/webmdshow/webmsplit.dll", codecs_dir)
+            FileUtils.cp("#{pluginCMakeDir}/ThirdParty/webmdshow/webmvorbisdecoder.dll", codecs_dir)
+
+            sh "#{$QT_DIR_BIN}/qmake -nocache -r -o Makefile \"CONFIG+=#{$UWEBKIT_BUILD_TARGET}\" \"BUILD_DIR=#{$UWK_BUILD_DIR}\" \"BUILD_ARCH=#{$UWEBKIT_BUILD_ARCH}\""
+            sh "jom clean"
+            sh "jom -j#{$numCores}"         
+
+            #TODO make sure ICU is being copied into Qt/bin during Qt compilation
+
+            FileUtils.mkdir($UWKPROCESS_DEPLOY_DIR)
+
+            bits = "32bit"  
+
+            if $UWEBKIT_BUILD_ARCH == "64"
+                bits = "64bit"
+            end 
+            
+            FileUtils.cp("#{$UWK_BUILD_DIR}/UWKProcess.exe", $UWKPROCESS_DEPLOY_DIR)
+            sh "windeployqt --release #{$UWKPROCESS_DEPLOY_DIR}/UWKProcess.exe"
+            
+            FileUtils.cp("#{$RAKE_ROOT}/ThirdParty/msvc10_#{bits}/msvcp100.dll", $UWKPROCESS_DEPLOY_DIR)
+            FileUtils.cp("#{$RAKE_ROOT}/ThirdParty/msvc10_#{bits}/msvcr100.dll", $UWKPROCESS_DEPLOY_DIR)
+
+            FileUtils.cp_r($UWKPROCESS_DEPLOY_DIR, $UWKPROCESS_DIR)
+
+            puts "\nuWebKit Native Plugin Built"
+            puts "\nYou may now open the uWebKit Unity project in the root of your source checkout"
+
+        end
+
+    end
+
+end
