@@ -70,15 +70,17 @@ QString Activation::GetMachineID()
 
 QString Activation::GetKeyDir()
 {
-    QString path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    QString path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     path += QString::fromLatin1("/uWebKit");
 
     QDir dir(path);
     if (!dir.exists())
     {
-        QDir mdir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+        QDir mdir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation));
         mdir.mkdir(QString::fromLatin1("uWebKit"));
     }
+
+    //UWKLog::LogVerbose("Key Dir: %s", path.toLatin1().data());
 
     return path;
 

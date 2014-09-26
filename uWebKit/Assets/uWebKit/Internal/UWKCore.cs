@@ -191,23 +191,12 @@ public class UWKCore : MonoBehaviour
                 break;
             case UWKMessageType.UMSG_ACTIVATION_STATE:
             #if UNITY_EDITOR   
-                if (!inActivation)
-                {     
-                    if (msg.iParams[0] != 1)
-                    {
-                        EditorUtility.DisplayDialog ("uWebKit Activation Required", "Please select uWebKit/Activate from the Editor menu", "Ok");
-                        EditorApplication.ExecuteMenuItem ("Edit/Play");
-                    }
-					else
-					{
-						Debug.Log ("Activation: " + msg.iParams[0]);
-					}
-                }
-				else
-				{
-					UWKActivation.SetActivationState(msg.iParams[0]);
-				}
-
+	            if (msg.iParams[0] != 1 && msg.iParams[0] != 5)
+	            {
+						if (sInstance.gameObject.GetComponent<UWKActivation>() == null)
+					    	sInstance.gameObject.AddComponent<UWKActivation>();
+	            }
+				UWKActivation.SetActivationState(msg.iParams[0]);
             #endif      
 
                 break;
