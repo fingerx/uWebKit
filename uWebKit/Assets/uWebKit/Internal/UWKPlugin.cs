@@ -161,6 +161,9 @@ public class UWKPlugin
     [DllImport ("UWKPlugin")]
     public static extern uint UWK_MsgLoadURL(uint browserID, [MarshalAs(UnmanagedType.LPStr)]String url);
 
+    [DllImport ("UWKPlugin")]
+    public static extern uint UWK_MsgSetUserAgent(uint browserID, [MarshalAs(UnmanagedType.LPStr)]String agent);
+
 	[DllImport ("UWKPlugin")]
 	public static extern uint UWK_MsgActivate([MarshalAs(UnmanagedType.LPStr)]String key);    
 
@@ -381,6 +384,7 @@ public enum UWKMessageType
     UMSG_VIEW_SETTEXTCARETCOLOR,
     UMSG_VIEW_RELOAD,
     UMSG_VIEW_SETFRAMERATE,
+    UMSG_VIEW_SETUSERAGENT,
     UMSG_ASYNC_RESULT,
     UMSG_JAVASCRIPT_CONSOLE,
     UMSG_JAVASCRIPT_MESSAGE,

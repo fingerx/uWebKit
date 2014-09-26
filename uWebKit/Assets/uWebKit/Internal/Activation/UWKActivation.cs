@@ -52,7 +52,6 @@ public class UWKActivation : MonoBehaviour
 
 	public static void SetActivationState(int state)
 	{
-		Debug.Log ("Activation State: " + state);
 		activationState = state;
 		activating = false;
 
@@ -153,6 +152,13 @@ public class UWKActivation : MonoBehaviour
 				Application.OpenURL ("http://www.uwebkit.com/uwebkit/store");
 				
 			}
+
+			if (GUILayout.Button ("Demo", GUILayout.Height (64))) {
+				
+				Application.OpenURL ("http://www.uwebkit.com/download");
+				
+			}
+
 
 			GUILayout.EndHorizontal ();
 			

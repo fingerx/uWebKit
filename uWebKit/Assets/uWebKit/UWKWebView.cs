@@ -347,6 +347,15 @@ public class UWKWebView : MonoBehaviour
     }
 
     /// <summary>
+    /// Sets the user agent the browser reports, setting the agent to "" 
+    /// will use the default uWebKit agent
+    /// </summary>
+    public void SetUserAgent (string agent = "")
+    {
+        UWKPlugin.UWK_MsgSetUserAgent(ID, agent);        
+    }
+
+    /// <summary>
     /// Navigate the view to the specified URL (http://, file://, etc)
     /// </summary>
     public void LoadURL (string url)

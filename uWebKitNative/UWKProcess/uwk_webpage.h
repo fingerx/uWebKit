@@ -20,16 +20,22 @@ class WebPage : public QWebPage
 {
     Q_OBJECT
 
+    QString userAgentOverride_;
+
 protected:
 
     WebView* view_;
     void javaScriptConsoleMessage ( const QString& message, int lineNumber, const QString& sourceID );
+    QString userAgentForUrl(const QUrl & url) const;
 
 public:
 
+    explicit WebPage(WebView* view);
+
     bool acceptNavigationRequest(QWebFrame *frame, const QNetworkRequest &request, NavigationType type);
 
-    explicit WebPage(WebView* view);
+    void setUserAgentOverride(const QString& agent) { userAgentOverride_ = agent; }
+
 
 public slots:
 

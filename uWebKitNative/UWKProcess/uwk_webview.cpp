@@ -382,6 +382,10 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
     {
         SetFrameRate(msg.iParams[0]);
     }
+    else if (msg.type == UMSG_VIEW_SETUSERAGENT)
+    {
+        page_->setUserAgentOverride(QtUtils::GetMessageQString(msg, 0));
+    }
 
 }
 

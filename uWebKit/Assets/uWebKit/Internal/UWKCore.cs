@@ -193,8 +193,8 @@ public class UWKCore : MonoBehaviour
             #if UNITY_EDITOR   
 	            if (msg.iParams[0] != 1 && msg.iParams[0] != 5)
 	            {
-						if (sInstance.gameObject.GetComponent<UWKActivation>() == null)
-					    	sInstance.gameObject.AddComponent<UWKActivation>();
+					if (sInstance.gameObject.GetComponent<UWKActivation>() == null)
+						sInstance.gameObject.AddComponent<UWKActivation>();
 	            }
 				UWKActivation.SetActivationState(msg.iParams[0]);
             #endif      
