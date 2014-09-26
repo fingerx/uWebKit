@@ -1,21 +1,8 @@
-
-
-#### uWebKit 2.0 is currently available for [purchase](http://uwebkit.com/store).  For more information, please see [Getting Started with uWebKit 2.0](https://github.com/uWebKit/uWebKit/wiki/Getting-Started-with-uWebKit-2.0)
-
-
-### uWebKit HTML5 for Unity Pro - Source Repository
-
 ![alt uWebKit](http://www.uwebkit.com/static/downloads/uwebkit/uWebKit_FeaturePage.jpg)
-
-This repository contains the full C++ and C# source code to uWebKit 2.0
 
 ### Download uWebKit 2.0 Package and Demos
 
-[http://uwebkit.com/download](http://uwebkit.com/download)
-
-#### Unity Forums Discussion Thread
-
-Please use this Unity forum thread for uWebKit discussion [http://forum.unity3d.com/threads/uwebkit-html5-for-unity-pro.193978](http://forum.unity3d.com/threads/uwebkit-html5-for-unity-pro.193978)
+#### [http://uwebkit.com/download](http://uwebkit.com/download)
 
 #### What is uWebKit2?
 
@@ -23,7 +10,11 @@ A robust and easy way to add HTML5 web content to your PC/Mac application.
 
 #### How much does it cost?
 
-uWebKit2 is licensed at $95/seat with a seat required for each project team member (programmers, artists, designers).  Please contact sales@uwebkit.com if you are interested in a source license.  uWebKit2 is a free upgrade for uWebKit1 license holders.
+uWebKit2 is [available for purchase](http://uwebkit.com/store) at $95/seat. A seat required for each project team member (programmers, artists, designers).  uWebKit2 is a free upgrade for uWebKit1 license holders.
+
+#### Unity Forums Discussion Thread
+
+Please use this Unity forum thread for uWebKit discussion [http://forum.unity3d.com/threads/uwebkit-html5-for-unity-pro.193978](http://forum.unity3d.com/threads/uwebkit-html5-for-unity-pro.193978)
 
 ### uWebKit2 for Unity Pro Features:
 
