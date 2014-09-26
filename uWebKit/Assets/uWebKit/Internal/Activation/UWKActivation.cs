@@ -148,7 +148,7 @@ public class UWKActivation : MonoBehaviour
 
 			if (GUILayout.Button ("Purchase", GUILayout.Height (64))) {
 				
-				Application.OpenURL ("http://www.uwebkit.com/uwebkit/store");
+				Application.OpenURL ("http://www.uwebkit.com/store");
 				
 			}
 
