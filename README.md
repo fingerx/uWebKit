@@ -13,7 +13,7 @@ A robust and easy way to add HTML5 web content to your PC/Mac application.
 
 #### How much does it cost?
 
-uWebKit2 is [available for purchase](http://uwebkit.com/store) at $95/seat. A seat required for each project team member (programmers, artists, designers).  uWebKit2 is a free upgrade for uWebKit1 license holders.
+uWebKit2 is [available for purchase](http://uwebkit.com/store) at $95/seat. A seat required for each project team member (programmers, artists, designers) running uWebKit in the Unity Editor.  uWebKit2 is a free upgrade for uWebKit1 license holders.
 
 #### Unity Forums Discussion Thread
 
