@@ -456,7 +456,9 @@ void WebView::timerEvent(QTimerEvent *event)
 
         gpuPainter.drawImage(QPoint(0, 0), pageImage_);
 
-        if (Activation::GetActivationState() == ACTIVATION_NEEDKEY || Activation::GetActivationState() == ACTIVATION_INVALID)
+        if (Activation::GetActivationState() == ACTIVATION_NEEDKEY ||
+            Activation::GetActivationState() == ACTIVATION_INVALID ||
+            Activation::GetActivationState() == ACTIVATION_EXCEEDED)
         {
             gpuImage_.fill(Qt::white);
             gpuPainter.setPen(Qt::black);

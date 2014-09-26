@@ -200,9 +200,11 @@ bool Activation::RunningInEditor()
         {
             if (dir.cdUp())
             {
-                if (dir.exists(QString::fromLatin1("Library")))
+                if (dir.exists(QString::fromLatin1("Library")) && dir.exists(QString::fromLatin1("ProjectSettings")))
                     return true;
             }
+
+            return false;
         }
     }
 
