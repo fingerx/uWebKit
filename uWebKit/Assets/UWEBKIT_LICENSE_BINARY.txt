@@ -2,8 +2,7 @@ END USER LICENSE AGREEMENT
 
 uWebKit Binary License for uWebKit 2.x
 
-* uWebKit Binary Licenses will be available on the Unity Asset Store
-* You must purchase a seat license of uWebKit Binary for each individual user using uWebKit with the Unity editor.
+* You must purchase a seat license of uWebKit Binary for each team member (programmers, artists, designers) running uWebKit in the Unity Editor.
 
 --
 
