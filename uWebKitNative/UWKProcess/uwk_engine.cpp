@@ -14,6 +14,7 @@
 #include "uwk_networkaccessmanager.h"
 #include "uwk_qt_utilities.h"
 #include "uwk_jsbridge_qt.h"
+#include "uwk_activation.h"
 
 namespace UWK
 {
@@ -175,6 +176,12 @@ void Engine::ProcessUWKMessage(const UWKMessage& msg)
         {
 
         }
+    }
+
+    if (msg.type ==  UMSG_ACTIVATE)
+    {
+        Activation::Activate(QtUtils::GetMessageQString(msg, 0));
+        return;
     }
 
     switch(msg.type)

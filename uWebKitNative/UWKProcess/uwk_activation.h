@@ -18,6 +18,8 @@
 #include <QNetworkReply>
 
 #include "UWKCommon/uwk_message.h"
+#include "uwk_activationrequest.h"
+
 
 namespace UWK
 {
@@ -31,6 +33,10 @@ class Activation : public QObject
     static int activationVersion_;
     static QString activationKey_;
 
+    static Activation* instance_;
+
+    static ActivationRequest* request_;
+
     static bool RunningInEditor();
     static QString GetMachineID();
     static QString GetKeyDir();
@@ -42,15 +48,27 @@ class Activation : public QObject
 
     static bool ParseKeyFile();
     static void RemoveKeyFile();
+    static void WriteKeyFile(const QString& key);
+    void HandleError();
 
 public:
 
     static void Initialize();
 
     static bool ActivationRequired();
+
+    static void Activate(const QString& key);
+
     static void DoActivationCheck();
 
     static ActivationState GetActivationState() { return activationState_; }
+
+public slots:
+
+    void replyFinished(QNetworkReply* reply);
+
+    void onError(QNetworkReply::NetworkError code);
+
 
 };
 

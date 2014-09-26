@@ -350,6 +350,17 @@ void EXPORT_API UWK_MsgLoadURL(uint32_t id, const char* utf8URL)
     UWKMessageQueue::Write(msg);
 }
 
+void EXPORT_API UWK_MsgActivate(const char* utf8Key)
+{
+    std::string key = utf8Key ? utf8Key : "";
+
+    UWKMessage msg;
+    msg.type = UMSG_ACTIVATE;
+    UWKMessageQueue::SetString(msg, 0, key.c_str());
+    UWKMessageQueue::Write(msg);
+}
+
+
 void EXPORT_API UWK_MsgViewReload(uint32_t id)
 {
     UWKMessage msg;

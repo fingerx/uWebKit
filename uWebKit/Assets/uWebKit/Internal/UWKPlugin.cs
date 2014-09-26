@@ -159,7 +159,10 @@ public class UWKPlugin
     public static extern void UWK_MsgMouseScroll(uint browserID, int x, int y, float scroll);
 
     [DllImport ("UWKPlugin")]
-    public static extern uint UWK_MsgLoadURL(uint browserID, [MarshalAs(UnmanagedType.LPStr)]String url);    
+    public static extern uint UWK_MsgLoadURL(uint browserID, [MarshalAs(UnmanagedType.LPStr)]String url);
+
+	[DllImport ("UWKPlugin")]
+	public static extern uint UWK_MsgActivate([MarshalAs(UnmanagedType.LPStr)]String key);    
 
     [DllImport ("UWKPlugin")]
     public static extern IntPtr UWK_GetMessageDataPtr(IntPtr msgPtr, int index);    
@@ -391,7 +394,8 @@ public enum UWKMessageType
     UMSG_IME_SETTEXT,
     UMSG_DEV_CRASHWEBPROCESS,
     UMSG_DEV_HANGWEBPROCESS,
-    UMSG_ACTIVATION_STATE
+    UMSG_ACTIVATION_STATE,
+    UMSG_ACTIVATE
 };
 
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
