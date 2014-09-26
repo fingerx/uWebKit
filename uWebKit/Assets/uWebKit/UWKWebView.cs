@@ -76,6 +76,16 @@ public class UWKWebView : MonoBehaviour
     public string URL;
 
     /// <summary>
+    /// Gets the current width of the UWKWebView
+    /// </summary>        
+    public int CurrentWidth = 1024;
+
+    /// <summary>
+    /// Gets the current height of the UWKWebView
+    /// </summary>        
+    public int CurrentHeight = 1024;
+
+    /// <summary>
     /// Max width of the UWKWebView, defined at creation time.  It is possible to set the 
     /// view's current width to be equal or smaller than this value
     /// </summary>    
@@ -98,22 +108,6 @@ public class UWKWebView : MonoBehaviour
         Forward = 0,
         Back
     }   
-
-    /// <summary>
-    /// Gets the current width of the UWKWebView
-    /// </summary>        
-    public int CurrentWidth
-    {
-        get { return currentWidth; }
-    }
-
-    /// <summary>
-    /// Gets the current height of the UWKWebView
-    /// </summary>        
-    public int CurrentHeight
-    {
-        get { return currentHeight; }
-    }
 
     /// <summary>
     /// Gets the width of the UWKWebView's content
@@ -221,7 +215,7 @@ public class UWKWebView : MonoBehaviour
     /// </summary>    
     public void SetCurrentSize(int width, int height)
     {
-        if (currentWidth == width && currentHeight == height)
+		if (currentWidth == width && currentHeight == height)
         {
             return;
         }    
@@ -238,8 +232,10 @@ public class UWKWebView : MonoBehaviour
         if (height < 32)
             height = 32;
 
-        currentWidth = width;
-        currentHeight = height;
+        CurrentWidth = width;
+        CurrentHeight = height;
+		currentWidth = width;
+		currentHeight = height;
 
         UWKPlugin.UWK_MsgSetCurrentSize(ID, width, height);
 
@@ -649,6 +645,8 @@ public class UWKWebView : MonoBehaviour
             URL = createURL;
             MaxWidth = createMaxWidth;
             MaxHeight = createMaxHeight;
+			CurrentWidth = MaxWidth;
+			CurrentHeight = MaxHeight;
         }
 
         if (MaxWidth < 64)
@@ -657,8 +655,13 @@ public class UWKWebView : MonoBehaviour
         if (MaxHeight < 64)
             MaxHeight = 64;
 
-        currentWidth = MaxWidth;
-        currentHeight = MaxHeight;
+		if (CurrentWidth > MaxWidth)
+        	CurrentWidth = MaxWidth;
+		if (CurrentHeight > MaxHeight)
+       		CurrentHeight = MaxHeight;
+
+		maxWidth = MaxWidth;
+		maxHeight = MaxHeight;
 
         // default delegate handlers
         LoadFinished += loadFinished;
@@ -696,8 +699,31 @@ public class UWKWebView : MonoBehaviour
 
     void Start()
     {
+        
+        if (CurrentWidth != MaxWidth || CurrentHeight != MaxHeight) 
+		{
+			SetCurrentSize (CurrentWidth, CurrentHeight);
+		}
+		else 
+		{
+			currentWidth = MaxWidth;
+			currentHeight = MaxHeight;
+		}
+
         LoadURL(URL);
+
     }
+
+	void Update()
+	{
+		if (CurrentWidth != currentWidth || CurrentHeight != currentHeight)
+			SetCurrentSize (CurrentWidth, CurrentHeight);
+
+		// in case changed, MaxWidth and MaxHeight are defined at creation 
+		MaxWidth = maxWidth;
+		MaxHeight = maxHeight;
+
+	}
 
     void OnDestroy()
     {
@@ -785,12 +811,17 @@ public class UWKWebView : MonoBehaviour
 
     int lastMouseX = -1;
     int lastMouseY = -1;
-
-    int currentWidth = 1024;
-    int currentHeight = 1024;
-
+	
     int contentWidth = 0;
     int contentHeight = 0;
+
+    // since Unity can't do getters/setters as inspector fields
+    int currentHeight;
+    int currentWidth;
+
+	int maxHeight;
+	int maxWidth;
+
 
     bool visible = true;
 
