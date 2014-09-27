@@ -43,7 +43,7 @@ Please use this Unity forum thread for uWebKit discussion [http://forum.unity3d.
 
 + Web rendering implemented as a subprocess, keeps your application memory space clean with ability to restart the web process on demand  
 
-+ Built with [industry standard Qt](http://qt.digia.com/Qt-in-Use)
++ Built with [industry standard Qt](http://www.qt.io/qt-in-use)
 
 + No nonsense binary and source licensing (Binary version coming soon to the Asset Store)
 
