@@ -1,4 +1,4 @@
-[![alt uWebKit](http://www.uwebkit.com/static/downloads/uwebkit/uWebKit_FeaturePage.jpg)](http://www.uwebkit.com)
+[![alt uWebKit](http://uwebkit.com/wp-content/uploads/2014/08/uWebKit_FeaturesHeader4.jpg)](http://www.uwebkit.com)
 ### Download uWebKit 2.0 Package and Demos
 
 #### [http://uwebkit.com/download](http://uwebkit.com/download)
