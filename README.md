@@ -21,7 +21,7 @@ Please use this Unity forum thread for uWebKit discussion [http://forum.unity3d.
 
 ### uWebKit2 for Unity Pro Features:
 
-+ Excellent integration with the Unity3D editor with simple deployment   
++ Excellent integration with the Unity3D editor including simple deployment   
 
 + Example scenes and prefabs, Multitab Browser, 2D WebGUI, 3D WebTexture, Javascript Messaging, Facebook login, etc
 
@@ -45,7 +45,7 @@ Please use this Unity forum thread for uWebKit discussion [http://forum.unity3d.
 
 + Built with [industry standard Qt](http://www.qt.io/qt-in-use)
 
-+ No nonsense binary and source licensing (Binary version coming soon to the Asset Store)
++ No nonsense binary and source licensing
 
 + Support and customization available.  Please contact sales@uwebkit.com
 
