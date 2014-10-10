@@ -263,6 +263,22 @@ public class UWKWebView : MonoBehaviour
     }
 
     /// <summary>
+    /// Globally disabled mouse and keyboard input from webviews
+    /// </summary>    
+    public static void EnableInput()
+    {
+        inputDisabled = false;
+    }
+
+    /// <summary>
+    /// Globally enables mouse and keyboard input from webviews
+    /// </summary>    
+    public static void DisableInput()
+    {
+        inputDisabled = true;
+    }    
+
+    /// <summary>
     /// Makes the page visible, the page will be updated and refreshed by the Wweb rendering process 
     /// </summary>    
     public void Show()
@@ -463,6 +479,8 @@ public class UWKWebView : MonoBehaviour
     /// </summary>
     public void ProcessMouse(Vector3 mousePos)    
     {
+        if (inputDisabled)
+            return;
 
         //mousePos.y = Screen.height - mousePos.y;      
 
@@ -516,6 +534,9 @@ public class UWKWebView : MonoBehaviour
     /// </summary>
     public void ProcessKeyboard(Event keyEvent)
     {
+
+        if (inputDisabled)
+            return;        
 
         UnityKeyEvent uevent = new UnityKeyEvent();            
 
@@ -846,6 +867,8 @@ public class UWKWebView : MonoBehaviour
     static int createMaxWidth;
     static int createMaxHeight;
     static string createURL;
+
+    static bool inputDisabled = false;
 
     #endregion
 

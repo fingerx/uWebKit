@@ -96,6 +96,8 @@ class WebView : public QGraphicsWebView
 
     QStaticText activationText_;
     QDateTime activationNoticeTime_;
+    static QDateTime activationStartTime_;
+    static qint64 activationNoticesRemaining_;
 
 #ifdef GITHUB_BUILD
 

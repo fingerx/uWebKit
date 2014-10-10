@@ -15,6 +15,9 @@ public class UWKActivation : MonoBehaviour
 
 	static Rect windowRect = new Rect (0, 0, 400, 300);
 
+	GUIStyle largeFontLabel;
+	GUIStyle largeFontTextField;
+
 	void Awake ()
 	{
 		// ensure Core is up
@@ -24,6 +27,14 @@ public class UWKActivation : MonoBehaviour
 	void Start()
 	{
 		Center ();
+
+        largeFontLabel = new GUIStyle("label");
+        largeFontTextField = new GUIStyle("textfield");
+
+        largeFontLabel.fontSize = 16;		
+		largeFontTextField.fontSize = 16;
+
+		UWKWebView.DisableInput();	
 	}
 
 
@@ -102,25 +113,19 @@ public class UWKActivation : MonoBehaviour
 		if (!activating) {
 
 			GUILayout.BeginVertical ();
-			
-			Color previousColor = GUI.color;
-			
-			GUI.color = Color.cyan;
-
+						
 			GUILayout.Space (8);	
 			
-			GUILayout.Label ("IMPORTANT: Please ensure Build Settings are set to PC/Mac Standalone before activating");
-			
-			GUI.color = previousColor;
-			
+			GUILayout.Label ("uWebKit has 2 activations per product key.  Activation is a one time process per machine.  Email sales@uwebkit.com with any issues\n\nIMPORTANT: Please ensure Build Settings are set to PC/Mac Standalone before activating");
+						
 			GUILayout.Space (16);			
 			
+			GUILayout.BeginHorizontal ();			
+			GUILayout.Label ("Please Enter Activation Key:", largeFontLabel);
+			GUILayout.EndHorizontal ();
+			
 			GUILayout.BeginHorizontal ();
-			
-			GUILayout.Label ("Activation Code", GUILayout.Width (96));
-			
-			activationCode = GUILayout.TextField (activationCode, 64, GUILayout.Width (280)).Trim ();
-						
+			activationCode = GUILayout.TextField (activationCode, 64, largeFontTextField, GUILayout.Width (280)).Trim ();						
 			GUILayout.EndHorizontal ();
 			
 			GUILayout.Space (32);
@@ -148,23 +153,16 @@ public class UWKActivation : MonoBehaviour
 
 			GUILayout.BeginHorizontal ();
 
-			if (GUILayout.Button ("Activate Later", GUILayout.Height (64))) {
-				activateLater = true;
-			}
-
-
 			if (GUILayout.Button ("Purchase", GUILayout.Height (64))) {
 				
 				Application.OpenURL ("http://www.uwebkit.com/store");
 				
 			}
 
-			if (GUILayout.Button ("Demo", GUILayout.Height (64))) {
-				
-				Application.OpenURL ("http://www.uwebkit.com/download");
-				
+			if (GUILayout.Button ("Activate Later", GUILayout.Height (64))) {
+				activateLater = true;
+				UWKWebView.EnableInput();
 			}
-
 
 			GUILayout.EndHorizontal ();
 			
@@ -183,8 +181,14 @@ public class UWKActivation : MonoBehaviour
 	{
 		if (activateLater)
 			return;
+
 		if (activateWindow)
-			windowRect = GUILayout.Window (-1, windowRect, windowFunction, "uWebKit Activation");
+		{
+			windowRect = GUILayout.Window (activationWindowID, windowRect, windowFunction, "uWebKit Activation");
+			GUI.BringWindowToFront(activationWindowID);
+			GUI.FocusWindow(activationWindowID);
+
+		}
 	}
 
 
@@ -218,6 +222,7 @@ public class UWKActivation : MonoBehaviour
 		windowRect.y = v.y;
 	}
 
+	static int activationWindowID = -2999;
 
 	string activationCode = "";
 	static bool activating = false;
