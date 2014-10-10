@@ -40,7 +40,8 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
     visible_(true),
     progress_(0),
     alphaMaskEnabled_(false),
-    textCaretColor_(0xFF000000)
+    textCaretColor_(0xFF000000),
+    activationNoticeTime_(QDateTime::currentDateTime())
 {
     page_ = new WebPage(this);
     setPage(page_);
@@ -96,7 +97,7 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
     SetFrameRate(30);
 
     activationText_.setText(QString::fromLatin1("uWebKit Activation Required"));
-    activationText_.prepare(QTransform(), QFont(QString::fromLatin1("Arial"), 24));
+    activationText_.prepare(QTransform(), QFont(QString::fromLatin1("Arial"), 18, QFont::Bold));
 
 #ifdef GITHUB_BUILD
     githubText_.setText(QString::fromLatin1("uWebKit GitHub Build<br>contact sales@uwebkit.com<br>for a Source License"));
@@ -460,9 +461,34 @@ void WebView::timerEvent(QTimerEvent *event)
             Activation::GetActivationState() == ACTIVATION_INVALID ||
             Activation::GetActivationState() == ACTIVATION_EXCEEDED)
         {
-            gpuImage_.fill(Qt::white);
-            gpuPainter.setPen(Qt::black);
-            gpuPainter.drawStaticText(0, 0, activationText_);
+
+            qint64 tm = activationNoticeTime_.msecsTo(now);
+
+            float atime = 20000;
+
+            if (tm > atime)
+            {
+                activationNoticeTime_ = now;
+            }
+            else if (tm > atime/2)
+            {
+                tm -= atime/2;
+
+                if (tm > atime/4)
+                    tm = atime/4 - (tm - atime/4);
+
+                float alpha = float(tm) / (atime/4);
+
+                alpha *= 255;
+
+                const QSizeF& size = activationText_.size();
+
+                gpuPainter.fillRect(0, 0,
+                                    size.width() + 128, size.height() + 128, QColor(32, 32, 32,int(alpha)) );
+
+                gpuPainter.setPen(QColor(255, 255, 255, int(alpha)));
+                gpuPainter.drawStaticText(64, 64, activationText_);
+            }
         }
 
 #ifdef GITHUB_BUILD
