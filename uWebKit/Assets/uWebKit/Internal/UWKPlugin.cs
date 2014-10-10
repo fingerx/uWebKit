@@ -67,7 +67,11 @@ public class UWKPlugin
 
 		if (File.Exists(cfgfile))
 		{
-			var jsonString = File.ReadAllText(cfgfile);
+			var jsonString = "";
+
+            #if !UNITY_WEBPLAYER    
+            jsonString = File.ReadAllText(cfgfile);
+            #endif
 
 			var cfg = UWKJson.Deserialize(jsonString) as Dictionary<string,object>;
 

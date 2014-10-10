@@ -113,26 +113,22 @@ public class UWKActivation : MonoBehaviour
 			
 			GUI.color = previousColor;
 			
-			GUILayout.Space (32);			
+			GUILayout.Space (16);			
 			
 			GUILayout.BeginHorizontal ();
 			
 			GUILayout.Label ("Activation Code", GUILayout.Width (96));
 			
 			activationCode = GUILayout.TextField (activationCode, 64, GUILayout.Width (280)).Trim ();
-			
-			// we're catching p on command-p to run scene
-			if (activationCode.StartsWith ("p")) {
-				activationCode = "";
-			}
-			
+						
 			GUILayout.EndHorizontal ();
 			
-			GUILayout.Space (64);
+			GUILayout.Space (32);
 
 			GUILayout.BeginHorizontal ();
 			
-			if (GUILayout.Button ("Activate", GUILayout.Height (64))) {
+			if (GUILayout.Button ("Activate", GUILayout.Height (64))) 
+			{
 
 				if (!validateKey (activationCode)) 
 				{
@@ -145,6 +141,17 @@ public class UWKActivation : MonoBehaviour
 					UWKPlugin.UWK_MsgActivate(activationCode);
 				}
 			}
+
+			GUILayout.EndHorizontal ();
+
+			GUILayout.Space (16);
+
+			GUILayout.BeginHorizontal ();
+
+			if (GUILayout.Button ("Activate Later", GUILayout.Height (64))) {
+				activateLater = true;
+			}
+
 
 			if (GUILayout.Button ("Purchase", GUILayout.Height (64))) {
 				
@@ -174,6 +181,8 @@ public class UWKActivation : MonoBehaviour
 
 	void OnGUI ()
 	{
+		if (activateLater)
+			return;
 		if (activateWindow)
 			windowRect = GUILayout.Window (-1, windowRect, windowFunction, "uWebKit Activation");
 	}
@@ -213,6 +222,7 @@ public class UWKActivation : MonoBehaviour
 	string activationCode = "";
 	static bool activating = false;
 	static bool activateWindow = true;
+	static bool activateLater = false;
 	static bool showActivationMessage = false;
 	static int activationState = -1;
 
