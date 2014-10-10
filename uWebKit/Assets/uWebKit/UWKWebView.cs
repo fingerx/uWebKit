@@ -385,6 +385,15 @@ public class UWKWebView : MonoBehaviour
     }
 
     /// <summary>
+    /// Stops the current page load
+    /// </summary>
+    public void Stop ()
+    {
+        UWKPlugin.UWK_MsgViewStop(ID);
+    }
+
+
+    /// <summary>
     /// Sends a Javascript message to the page
     /// </summary>
     public void SendJSMessage(string msgName, Dictionary<string,object> msgValues)

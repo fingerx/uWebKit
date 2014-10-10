@@ -196,6 +196,9 @@ public class UWKPlugin
     public static extern uint UWK_MsgViewReload(uint browserId);    
 
     [DllImport ("UWKPlugin")]
+    public static extern void UWK_MsgViewStop(uint browserId);        
+
+    [DllImport ("UWKPlugin")]
     public static extern uint UWK_MsgSetAlphaMask(uint browserId, bool enabled);  
 
     [DllImport ("UWKPlugin")]
@@ -380,6 +383,7 @@ public enum UWKMessageType
     UMSG_VIEW_EVALUATE_JAVASCRIPT,
     UMSG_VIEW_LOADURL,
     UMSG_VIEW_LOADHTML,
+    UMSG_VIEW_STOP,
     UMSG_VIEW_SHOW,
     UMSG_VIEW_NAVIGATE,
     UMSG_VIEW_SETZOOMFACTOR,

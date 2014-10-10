@@ -414,6 +414,14 @@ void EXPORT_API UWK_MsgShow(uint32_t id, bool show)
     UWKMessageQueue::Write(msg);
 }
 
+void EXPORT_API UWK_MsgViewStop(uint32_t id)
+{
+    UWKMessage msg;
+    msg.type = UMSG_VIEW_STOP;
+    msg.browserID = id;
+    UWKMessageQueue::Write(msg);
+}
+
 void EXPORT_API UWK_MsgNavigate(uint32_t id, int value)
 {
     UWKMessage msg;

@@ -387,6 +387,10 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
     {
         page_->setUserAgentOverride(QtUtils::GetMessageQString(msg, 0));
     }
+    else if (msg.type == UMSG_VIEW_STOP)
+    {
+        page_->triggerAction(QWebPage::Stop);
+    }
 
 }
 
