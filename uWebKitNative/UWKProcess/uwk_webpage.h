@@ -28,6 +28,9 @@ protected:
     void javaScriptConsoleMessage ( const QString& message, int lineNumber, const QString& sourceID );
     QString userAgentForUrl(const QUrl & url) const;
 
+    void javaScriptAlert (QWebFrame* frame, const QString& message );
+    bool javaScriptConfirm ( QWebFrame* frame, const QString& message );
+
 public:
 
     explicit WebPage(WebView* view);

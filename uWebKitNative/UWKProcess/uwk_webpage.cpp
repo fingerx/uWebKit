@@ -30,6 +30,32 @@ WebPage::WebPage(WebView* view) :
 
 }
 
+void WebPage::javaScriptAlert ( QWebFrame* frame, const QString& message)
+{
+    Q_UNUSED(frame);
+    UWKMessage msg;
+    msg.type = UMSG_JAVASCRIPT_CONSOLE;
+    msg.browserID = view_->GetID();
+    msg.iParams[0] = 0;
+    QtUtils::SetMessageQString(msg, 0, message);
+    QtUtils::SetMessageQString(msg, 1, QString::fromLatin1("Javascript Alert"));
+    UWKMessageQueue::Write(msg);
+}
+
+bool WebPage::javaScriptConfirm (QWebFrame* frame, const QString& message )
+{
+    Q_UNUSED(frame);
+    UWKMessage msg;
+    msg.type = UMSG_JAVASCRIPT_CONSOLE;
+    msg.browserID = view_->GetID();
+    msg.iParams[0] = 0;
+    QtUtils::SetMessageQString(msg, 0, message);
+    QtUtils::SetMessageQString(msg, 1, QString::fromLatin1("Javascript Confirm"));
+    UWKMessageQueue::Write(msg);
+    return false;
+}
+
+
 bool WebPage::acceptNavigationRequest(QWebFrame *frame, const QNetworkRequest &request, NavigationType type)
 {
 
