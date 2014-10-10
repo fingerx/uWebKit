@@ -95,7 +95,8 @@ class WebView : public QGraphicsWebView
     void setTextCaretColor(uint32_t color) { textCaretColor_ = color; }
 
     QStaticText activationText_;
-    QDateTime activationNoticeTime_;
+    bool finalActivationTextSet_;
+    static QDateTime activationNoticeTime_;
     static QDateTime activationStartTime_;
     static qint64 activationNoticesRemaining_;
 

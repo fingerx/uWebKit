@@ -27,7 +27,9 @@ namespace UWK
 {
 
 QDateTime WebView::activationStartTime_(QDateTime::currentDateTime());
+QDateTime WebView::activationNoticeTime_(QDateTime::currentDateTime());
 qint64 WebView::activationNoticesRemaining_ = 10;
+
 
 WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
     id_(id),
@@ -44,7 +46,7 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
     progress_(0),
     alphaMaskEnabled_(false),
     textCaretColor_(0xFF000000),
-    activationNoticeTime_(QDateTime::currentDateTime())
+    finalActivationTextSet_(false)
 {
     page_ = new WebPage(this);
     setPage(page_);
@@ -100,7 +102,7 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
     SetFrameRate(30);
 
     char activationMsg[256];
-    sprintf(activationMsg, "uWebKit Activation Required: %i", (int) activationNoticesRemaining_);
+    sprintf(activationMsg, "uWebKit Activation Required: %i", (int) activationNoticesRemaining_ - 1);
     activationText_.setText(QString::fromLatin1(activationMsg));
     activationText_.prepare(QTransform(), QFont(QString::fromLatin1("Arial"), 18, QFont::Bold));
 
@@ -472,6 +474,13 @@ void WebView::timerEvent(QTimerEvent *event)
         {
             if (!activationNoticesRemaining_)
             {
+                if (!finalActivationTextSet_)
+                {
+                    finalActivationTextSet_ = true;
+                    activationText_.setText(QString::fromLatin1("uWebKit Activation Required, please visit http://www.uwebkit.com to purchase a key"));
+                    activationText_.prepare(QTransform(), QFont(QString::fromLatin1("Arial"), 18, QFont::Bold));
+
+                }
                 gpuImage_.fill(Qt::white);
                 gpuPainter.setPen(Qt::black);
                 gpuPainter.drawStaticText(0, 0, activationText_);
@@ -487,14 +496,13 @@ void WebView::timerEvent(QTimerEvent *event)
                     activationNoticeTime_ = now;
                     activationNoticesRemaining_--;
 
-                    char activationMsg[256];
                     if (activationNoticesRemaining_)
-                        sprintf(activationMsg, "uWebKit Activation Required: %i", (int) activationNoticesRemaining_);
-                    else
-                        sprintf(activationMsg, "uWebKit Activation Required, please visit http://www.uwebkit.com to purchase a license");
-
-                    activationText_.setText(QString::fromLatin1(activationMsg));
-                    activationText_.prepare(QTransform(), QFont(QString::fromLatin1("Arial"), 18, QFont::Bold));
+                    {
+                        char activationMsg[256];
+                        sprintf(activationMsg, "uWebKit Activation Required: %i", (int) activationNoticesRemaining_ - 1);
+                        activationText_.setText(QString::fromLatin1(activationMsg));
+                        activationText_.prepare(QTransform(), QFont(QString::fromLatin1("Arial"), 18, QFont::Bold));
+                    }
 
                 }
                 else if (tm > atime - 10000)
