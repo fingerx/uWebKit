@@ -28,12 +28,6 @@ public class UWKActivation : MonoBehaviour
 	{
 		Center ();
 
-        largeFontLabel = new GUIStyle("label");
-        largeFontTextField = new GUIStyle("textfield");
-
-        largeFontLabel.fontSize = 16;		
-		largeFontTextField.fontSize = 16;
-
 		UWKWebView.DisableInput();	
 	}
 
@@ -181,6 +175,16 @@ public class UWKActivation : MonoBehaviour
 	{
 		if (activateLater)
 			return;
+
+		if (largeFontLabel == null)
+		{
+			largeFontLabel = new GUIStyle("label");
+        	largeFontTextField = new GUIStyle("textfield");
+
+        	largeFontLabel.fontSize = 16;		
+			largeFontTextField.fontSize = 16;
+
+		}
 
 		if (activateWindow)
 		{
