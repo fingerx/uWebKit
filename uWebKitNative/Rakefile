@@ -51,7 +51,7 @@ $QT_BUILD_TARGET = "release"
 
 if $UWEBKIT_HOST_OS == 'windows'
     ENV['QMAKESPEC'] = "win32-msvc2010"
-    ENV['PATH'] = "#{$QT_DIR_PREFIX}/bin;#{$RAKE_ROOT}/Build/Windows/Bin;" + ENV['PATH']    
+    ENV['PATH'] = "#{$QT_DIR_PREFIX}/bin;#{$RAKE_ROOT}/Build/Windows/Bin;" + ENV['PATH']     
 end
 
 namespace :qt do
@@ -98,6 +98,10 @@ namespace :qt do
                 sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowplayerservice.h .\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowplayerservice.h"
                 sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowmediatype.cpp .\\qtmultimedia\\src\\plugins\\directshow\\player\\directshowmediatype.cpp"
                 sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtwebkit\\Source\\WebCore\\platform\\graphics\\MediaPlayer.cpp .\\qtwebkit\\Source\\WebCore\\platform\\graphics\\MediaPlayer.cpp"
+
+                # zlib support for WOFF on windows
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtwebkit\\Tools\\qmake\\mkspecs\\features\\features.prf .\\qtwebkit\\Tools\\qmake\\mkspecs\\features\\features.prf"
+                sh "xcopy /Y ..\\..\\..\\QtPatches\\Windows\\qtwebkit\\Source\\WebCore\\WebCore.pri .\\qtwebkit\\Source\\WebCore\\WebCore.pri"
                 
                 # https://bugreports.qt-project.org/browse/QTBUG-39533
                 # not in Qt 5.3.1, check when upgrading
@@ -108,7 +112,7 @@ namespace :qt do
                 ENV['PATH'] = "#{$RAKE_ROOT}/#{$QT_DIR_SOURCE}/gnuwin32/bin;" +  ENV['PATH'] 
                 ENV['DXSDK_DIR'] = "#{$RAKE_ROOT}\\ThirdParty\\dxsdk_june_2010\\"
 
-                config = "-prefix #{$QT_DIR_PREFIX} -#{$QT_BUILD_TARGET} -opensource -confirm-license -make-tool jom -no-wmf-backend -no-avx -no-avx2 -ltcg -platform win32-msvc2010 -icu -openssl-linked #{skip} #{libs} OPENSSL_LIBS=\"ssleay32MT.lib libeay32MT.lib user32.lib advapi32.lib gdi32.lib crypt32.lib\" -I #{$RAKE_ROOT}/Thirdparty/openssl/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/openssl/#{bits} -I #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/lib -nomake examples -nomake tests"
+                config = "-prefix #{$QT_DIR_PREFIX} -#{$QT_BUILD_TARGET} -opensource -confirm-license -make-tool jom -system-zlib -no-wmf-backend -no-avx -no-avx2 -ltcg -platform win32-msvc2010 -icu -openssl-linked #{skip} #{libs} OPENSSL_LIBS=\"ssleay32MT.lib libeay32MT.lib user32.lib advapi32.lib gdi32.lib crypt32.lib\" -I #{$RAKE_ROOT}/Thirdparty/openssl/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/openssl/#{bits} -I #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/include -L #{$RAKE_ROOT}/Thirdparty/icu/#{bits}/lib -I \"#{$RAKE_ROOT}/ThirdParty/zlib/include\" -L \"#{$RAKE_ROOT}/Thirdparty/zlib/#{bits}\" -nomake examples -nomake tests"
 
                 #windows xp support
                 if $UWEBKIT_BUILD_ARCH == "32"
