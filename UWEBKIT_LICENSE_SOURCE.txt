@@ -2,7 +2,7 @@ END USER LICENSE AGREEMENT
 
 uWebKit Source Code License for uWebKit 2.x
 
-* Source licenses are available for purchase, please contact sales@uwebkit.com
+* Source licenses which allow modification and redistribution of modified binaries are available for purchase, please contact sales@uwebkit.com
 
 --
 
