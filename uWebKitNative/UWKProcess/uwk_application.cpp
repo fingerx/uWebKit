@@ -75,6 +75,7 @@ UWKApplication::UWKApplication(int &argc, char **argv)
         return;
 
     QWebSettings::globalSettings()->setAttribute(QWebSettings::JavascriptEnabled, true);
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::JavascriptCanAccessClipboard, true);
 
     // plugins (Flash) disabled, will add an optional enable plugins, however default is off
     QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, false);
