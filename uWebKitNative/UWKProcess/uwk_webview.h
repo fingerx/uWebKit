@@ -83,6 +83,8 @@ class WebView : public QGraphicsWebView
 
     uint32_t textCaretColor_;
 
+    QWebInspector* inspector_;
+
     void checkIcon();
 
     void adjustSize(int width, int height);
@@ -127,6 +129,9 @@ protected:
 public:
 
     void SetFrameRate(int framerate);
+
+    void ShowInspector();
+    void CloseInspector();
 
     void ProcessUWKMessage(const UWKMessage& msg);
 

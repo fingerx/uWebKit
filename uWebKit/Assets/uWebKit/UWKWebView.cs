@@ -618,6 +618,23 @@ public class UWKWebView : MonoBehaviour
         IMEActive = false;
     }
 
+    /// <summary>
+    /// Opens a platform Web Inspector Window
+    /// </summary>
+    public void ShowInspector ()
+    {
+        UWKPlugin.UWK_MsgViewShowInspector(ID);
+    }
+
+    /// <summary>
+    /// Closes the Web Inspector window Associated with this View
+    /// </summary>
+    public void CloseInspector ()
+    {
+        UWKPlugin.UWK_MsgViewCloseInspector(ID);
+    }
+
+
     #region Default delegate handlers
 
     void loadFinished(UWKWebView view)

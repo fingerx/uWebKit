@@ -422,6 +422,23 @@ void EXPORT_API UWK_MsgViewStop(uint32_t id)
     UWKMessageQueue::Write(msg);
 }
 
+void EXPORT_API UWK_MsgViewShowInspector(uint32_t id)
+{
+    UWKMessage msg;
+    msg.type = UMSG_VIEW_SHOWINSPECTOR;
+    msg.browserID = id;
+    UWKMessageQueue::Write(msg);
+}
+
+void EXPORT_API UWK_MsgViewCloseInspector(uint32_t id)
+{
+    UWKMessage msg;
+    msg.type = UMSG_VIEW_CLOSEINSPECTOR;
+    msg.browserID = id;
+    UWKMessageQueue::Write(msg);
+}
+
+
 void EXPORT_API UWK_MsgNavigate(uint32_t id, int value)
 {
     UWKMessage msg;

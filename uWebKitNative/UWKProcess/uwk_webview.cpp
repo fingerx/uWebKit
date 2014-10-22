@@ -46,6 +46,7 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
     progress_(0),
     alphaMaskEnabled_(false),
     textCaretColor_(0xFF000000),
+    inspector_(NULL),
     finalActivationTextSet_(false)
 {
     page_ = new WebPage(this);
@@ -124,6 +125,12 @@ WebView::~WebView()
     delete page_;
     delete graphicsView_;
     delete scene_;
+
+    if (inspector_)
+    {
+        inspector_->hide();
+        delete inspector_;
+    }
 }
 
 void WebView::adjustSize(int width, int height)
@@ -397,6 +404,14 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
     else if (msg.type == UMSG_VIEW_STOP)
     {
         page_->triggerAction(QWebPage::Stop);
+    }
+    else if (msg.type == UMSG_VIEW_SHOWINSPECTOR)
+    {
+        ShowInspector();
+    }
+    else if (msg.type == UMSG_VIEW_CLOSEINSPECTOR)
+    {
+        CloseInspector();
     }
 
 }
@@ -737,5 +752,29 @@ void WebView::SetFrameRate(int framerate)
     timerId_ = startTimer(1000/framerate);
 
 }
+
+void WebView::ShowInspector()
+{
+    if (inspector_)
+        return;
+
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+
+    inspector_ = new QWebInspector();
+    inspector_->setPage(page_);
+    inspector_->show();
+}
+
+void WebView::CloseInspector()
+{
+    if (!inspector_)
+        return;
+
+    inspector_->hide();
+    delete inspector_;
+    inspector_ = NULL;
+
+}
+
 
 }

@@ -222,6 +222,12 @@ public class UWKPlugin
     [DllImport ("UWKPlugin")]
     public static extern void UWK_MsgLoadHTML(uint browserId, IntPtr utf8HTML, IntPtr utf8BaseURL);
 
+    [DllImport ("UWKPlugin")]
+    public static extern void UWK_MsgViewShowInspector(uint browserId);        
+
+    [DllImport ("UWKPlugin")]
+    public static extern void UWK_MsgViewCloseInspector(uint browserId);        
+
     private static string stringFromNativeUtf8(IntPtr nativeUtf8) 
     {
         if (nativeUtf8 == IntPtr.Zero)
@@ -393,6 +399,8 @@ public enum UWKMessageType
     UMSG_VIEW_RELOAD,
     UMSG_VIEW_SETFRAMERATE,
     UMSG_VIEW_SETUSERAGENT,
+    UMSG_VIEW_SHOWINSPECTOR,
+    UMSG_VIEW_CLOSEINSPECTOR,
     UMSG_ASYNC_RESULT,
     UMSG_JAVASCRIPT_CONSOLE,
     UMSG_JAVASCRIPT_MESSAGE,

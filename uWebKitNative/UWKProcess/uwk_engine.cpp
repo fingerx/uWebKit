@@ -207,6 +207,8 @@ void Engine::ProcessUWKMessage(const UWKMessage& msg)
         case UMSG_IME_SETTEXT:
         case UMSG_VIEW_SETFRAMERATE:
         case UMSG_VIEW_SETUSERAGENT:
+        case UMSG_VIEW_SHOWINSPECTOR:
+        case UMSG_VIEW_CLOSEINSPECTOR:
         case UMSG_VIEW_STOP:
             if (!viewMap_.contains(msg.browserID))
                 return;
