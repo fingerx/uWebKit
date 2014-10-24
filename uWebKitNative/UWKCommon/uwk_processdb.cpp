@@ -72,6 +72,11 @@ bool UWKProcessDB::UpdateServerTimestamp(const UWKProcessCommon::PID& pid)
 
 bool UWKProcessDB::CheckProcessTerminated(const UWKProcessCommon::PID& pid, bool serverProcess)
 {
+
+#ifdef UWK_WINDBG
+    return false;
+#endif
+    
     std::string path;
 
     if (!UWKProcessUtils::GetExecutablePath(pid, path) || !path.length())
@@ -107,6 +112,10 @@ bool UWKProcessDB::CheckProcessTerminated(const UWKProcessCommon::PID& pid, bool
 bool UWKProcessDB::CheckProcessTimeout(const UWKProcessCommon::PID& pid, bool serverProcess, bool &terminated)
 {
     terminated = false;
+
+#ifdef UWK_WINDBG
+    return false;
+#endif
 
     // first check that the server is running
     if (CheckProcessTerminated(pid, serverProcess))

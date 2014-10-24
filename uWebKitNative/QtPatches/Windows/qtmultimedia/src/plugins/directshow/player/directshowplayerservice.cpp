@@ -865,7 +865,9 @@ void DirectShowPlayerService::doRender(QMutexLocker *locker)
         m_pendingTasks ^= SetVideoOutput;
         m_executedTasks |= SetVideoOutput;
 
-        uwkAddGraphFilters();
+        // MP3 support, we only want WebM for video
+        if (m_streamTypes & VideoStream)
+            uwkAddGraphFilters();
     }
 
     IFilterGraph2 *graph = m_graph;

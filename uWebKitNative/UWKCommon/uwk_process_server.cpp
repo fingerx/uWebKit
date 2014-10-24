@@ -108,6 +108,11 @@ bool UWKProcessServer::SpawnClient(const Process::Args& args)
 #endif
 
     std::vector<std::string> nargs = renderProcessArgs_;
+
+#ifdef UWK_WINDBG
+    nargs.push_back(command);
+#endif
+
     nargs.push_back("-parentpid");
     nargs.push_back(pid);
 
@@ -124,7 +129,11 @@ bool UWKProcessServer::SpawnClient(const Process::Args& args)
 
     nargs.push_back(processdb64.str());
 
+#ifdef UWK_WINDBG
+    renderProcessHandle_ = new ProcessHandle(Process::launch("\"C:\\Program Files (x86)\\Windows Kits\\8.1\\Debuggers\\x86\\windbg\"", nargs, initialDirectory));
+#else
     renderProcessHandle_ = new ProcessHandle(Process::launch(command, nargs, initialDirectory));
+#endif
 
     if (!renderProcessHandle_->id())
     {
