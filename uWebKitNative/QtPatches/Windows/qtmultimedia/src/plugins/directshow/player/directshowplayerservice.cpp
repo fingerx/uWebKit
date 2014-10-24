@@ -564,6 +564,7 @@ DirectShowPlayerService::DirectShowPlayerService(QObject *parent)
     m_vp8DecoderFilter = NULL;
     m_vorbisDecoderFilter = NULL;
     m_webmSplitterFilter = NULL;
+    m_isAudioURL = false;
 
     // END UWEBKIT
 
@@ -725,6 +726,15 @@ void DirectShowPlayerService::doSetUrlSource(QMutexLocker *locker)
     QMediaResource resource = m_resources.takeFirst();
     m_url = resource.url();
 
+    // uWebKit
+    if (m_url.toString().endsWith(QLatin1String("mp3"), Qt::CaseInsensitive ) || 
+        m_url.toString().endsWith(QLatin1String("ogg"), Qt::CaseInsensitive ) ||
+        m_url.toString().endsWith(QLatin1String("m4a"), Qt::CaseInsensitive ) ||
+        m_url.toString().endsWith(QLatin1String("wav"), Qt::CaseInsensitive ))
+    {
+        m_isAudioURL = true;
+    }
+
     HRESULT hr = E_FAIL;
     if (m_url.scheme() == QLatin1String("http") || m_url.scheme() == QLatin1String("https")) {
         static const GUID clsid_WMAsfReader = {
@@ -864,11 +874,10 @@ void DirectShowPlayerService::doRender(QMutexLocker *locker)
 
         m_pendingTasks ^= SetVideoOutput;
         m_executedTasks |= SetVideoOutput;
-
-        // MP3 support, we only want WebM for video
-        if (m_streamTypes & VideoStream)
-            uwkAddGraphFilters();
     }
+
+    if (!m_isAudioURL)
+        uwkAddGraphFilters();
 
     IFilterGraph2 *graph = m_graph;
     graph->AddRef();

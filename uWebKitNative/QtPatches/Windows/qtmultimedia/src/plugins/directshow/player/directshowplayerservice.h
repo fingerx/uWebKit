@@ -219,7 +219,9 @@ private:
     // define the prototype of the class factory entry point in a COM dll
     typedef HRESULT (STDAPICALLTYPE* FN_DLLGETCLASSOBJECT)(REFCLSID clsid, REFIID iid, void** ppv);
  
-    bool uwkAddGraphFilters();         
+    bool uwkAddGraphFilters();  
+
+    bool m_isAudioURL;       
 
     IBaseFilter* m_vp8DecoderFilter;
     IBaseFilter* m_vorbisDecoderFilter;
