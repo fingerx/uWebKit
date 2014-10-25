@@ -50,6 +50,8 @@ public:
 
     bool ShutdownReceived() { return shutdown_; }
 
+    void ConfigureProxy();
+
     NetworkAccessManager* GetNetworkAccessManager();
     NetworkCookieJar* GetCookieJar();
 

@@ -67,7 +67,7 @@ UWKApplication::UWKApplication(int &argc, char **argv)
     if (!parentpid || !processdb.length())
         return;
 
-    QNetworkProxyFactory::setUseSystemConfiguration(true);
+    //QNetworkProxyFactory::setUseSystemConfiguration(true);
 
     JavascriptEmbedded::Initialize();
 

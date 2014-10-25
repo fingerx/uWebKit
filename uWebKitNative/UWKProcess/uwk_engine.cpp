@@ -7,6 +7,7 @@
   * for details
 *******************************************/
 
+#include "UWKCommon/uwk_config.h"
 #include "uwk_engine.h"
 #include "uwk_webview.h"
 
@@ -29,6 +30,8 @@ Engine::Engine() : shutdown_(false), networkAccessManager_(NULL)
 void Engine::Initialize()
 {
     sInstance_ = new Engine();
+
+    sInstance_->ConfigureProxy();
 
     JSBridge::Initialize();
 
@@ -215,6 +218,63 @@ void Engine::ProcessUWKMessage(const UWKMessage& msg)
             viewMap_.find(msg.browserID).value()->ProcessUWKMessage(msg);
             break;
     }
+
+}
+
+void Engine::ConfigureProxy()
+{
+    if (UWKConfig::GetProxyEnabled())
+    {
+        QNetworkProxy proxy;
+        proxy.setType(QNetworkProxy::HttpProxy);
+
+        std::string _hostname;
+        std::string _username;
+        std::string _password;
+
+        UWKConfig::GetProxyHostname(_hostname);
+        UWKConfig::GetProxyUsername(_username);
+        UWKConfig::GetProxyPassword(_password);
+
+        QString hostname = QString::fromLatin1(_hostname.c_str());
+        QString username = QString::fromLatin1(_username.c_str());
+        QString password = QString::fromLatin1(_password.c_str());
+
+        int port = UWKConfig::GetProxyPort();
+
+        proxy.setHostName(hostname);
+        if (username.length())
+            proxy.setUser(username);
+        if (password.length())
+            proxy.setPassword(password);
+
+        if (username.length())
+            GetNetworkAccessManager()->setProxyCredentials(username, password);
+
+        proxy.setPort(port);
+
+        QNetworkProxy::setApplicationProxy(proxy);
+
+        GetNetworkAccessManager()->setProxy(proxy);
+
+    }
+
+    if (UWKConfig::GetAuthEnabled())
+    {
+
+        std::string _username;
+        std::string _password;
+
+        UWKConfig::GetAuthUsername(_username);
+        UWKConfig::GetAuthPassword(_password);
+
+        QString username = QString::fromLatin1(_username.c_str());
+        QString password = QString::fromLatin1(_password.c_str());
+
+        GetNetworkAccessManager()->setAuthCredentials(username, password);
+
+    }
+
 
 }
 

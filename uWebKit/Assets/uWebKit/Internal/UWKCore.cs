@@ -86,8 +86,11 @@ public class UWKCore : MonoBehaviour
         }
 #endif      
 
+#if UNITY_4_3
+        lastUpdate += Time.deltaTime;
+#else
         lastUpdate += Time.unscaledDeltaTime;
-
+#endif
         // throttle
         if (lastUpdate > .033f)
         {

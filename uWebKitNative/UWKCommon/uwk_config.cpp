@@ -30,10 +30,19 @@ std::string UWKConfig::temporaryCachePath_;
 std::string UWKConfig::graphicsDeviceVersion_;
 std::string UWKConfig::productName_;
 std::string UWKConfig::companyName_;
+
+bool UWKConfig::proxyEnabled_ = false;
+std::string UWKConfig::proxyHostName_;
+std::string UWKConfig::proxyUsername_;
+std::string UWKConfig::proxyPassword_;
+int UWKConfig::proxyPort_ = 0;
+
+bool UWKConfig::authEnabled_ = false;
+std::string UWKConfig::authUsername_;
+std::string UWKConfig::authPassword_;
+
 bool UWKConfig::imeEnabled_ = false;
 int UWKConfig::serverID_ = 0;
-
-
 
 void UWKConfig::GetJSON(std::string& json)
 {
@@ -53,6 +62,15 @@ void UWKConfig::GetJSON(std::string& json)
     json_object_set(app, "productName", json_string(productName_.c_str()));
     json_object_set(app, "imeEnabled", imeEnabled_ ? json_true() : json_false());
     json_object_set(app, "serverID", json_integer(serverID_));
+
+    json_object_set(app, "proxyEnabled", proxyEnabled_ ? json_true() : json_false());
+    json_object_set(app, "proxyHostName", json_string(proxyHostName_.c_str()));
+    json_object_set(app, "proxyUsername", json_string(proxyUsername_.c_str()));
+    json_object_set(app, "proxyPassword", json_string(proxyPassword_.c_str()));
+    json_object_set(app, "proxyPort", json_integer(proxyPort_));
+    json_object_set(app, "authEnabled", authEnabled_ ? json_true() : json_false());
+    json_object_set(app, "authUsername", json_string(authUsername_.c_str()));
+    json_object_set(app, "authPassword", json_string(authPassword_.c_str()));
 
     json = json_dumps(config, JSON_INDENT(4));
 
@@ -240,6 +258,80 @@ bool UWKConfig::InitFromUnityJSON(std::string& json)
     // serverID is not set from Unity JSON and
     // is valid once server is registered with process
     // database
+
+    // Proxy
+
+    // proxyEnabled
+    jvalue = json_object_get(appConfig, "proxyEnabled");
+    if (!jvalue || !json_is_boolean(jvalue))
+    {
+        proxyEnabled_ = false;
+    }
+    else
+        proxyEnabled_ = json_is_true(jvalue);
+
+    // proxyHostName
+    jvalue = json_object_get(appConfig, "proxyHostName");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        proxyHostName_ = "";
+    }
+    else
+        proxyHostName_ = json_string_value(jvalue);
+
+    // proxyUsername
+    jvalue = json_object_get(appConfig, "proxyUsername");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        proxyUsername_ = "";
+    }
+    else
+        proxyUsername_ = json_string_value(jvalue);
+
+    // proxyPassword
+    jvalue = json_object_get(appConfig, "proxyPassword");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        proxyPassword_ = "";
+    }
+    else
+        proxyPassword_ = json_string_value(jvalue);
+
+    // proxyPort
+    jvalue = json_object_get(appConfig, "proxyPort");
+    if (!jvalue || !json_is_integer(jvalue))
+    {
+        proxyPort_ = 0;
+    }
+    else
+        proxyPort_ = json_integer_value(jvalue);
+
+    // authEnabled
+    jvalue = json_object_get(appConfig, "authEnabled");
+    if (!jvalue || !json_is_boolean(jvalue))
+    {
+        authEnabled_ = false;
+    }
+    else
+        authEnabled_ = json_is_true(jvalue);
+
+    // authUsername
+    jvalue = json_object_get(appConfig, "authUsername");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        authUsername_ = "";
+    }
+    else
+        authUsername_ = json_string_value(jvalue);
+
+    // authPassword
+    jvalue = json_object_get(appConfig, "authPassword");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        authPassword_ = "";
+    }
+    else
+        authPassword_ = json_string_value(jvalue);
 
     // isEditor
     jvalue = json_object_get(appConfig, "isEditor");
@@ -481,6 +573,86 @@ bool UWKConfig::SetFromJSON(const std::string& json)
 
     serverID_ = json_integer_value(jvalue);
 
+    // proxyEnabled
+    jvalue = json_object_get(app, "proxyEnabled");
+    if (!jvalue || !json_is_boolean(jvalue))
+    {
+        json_decref(config);
+        return false;
+    }
+
+    proxyEnabled_ = json_is_true(jvalue);
+
+    // proxyHostName
+    jvalue = json_object_get(app, "proxyHostName");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        json_decref(config);
+        return false;
+    }
+
+    proxyHostName_ = json_string_value(jvalue);
+
+    // proxyUsername
+    jvalue = json_object_get(app, "proxyUsername");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        json_decref(config);
+        return false;
+    }
+
+    proxyUsername_ = json_string_value(jvalue);
+
+    // proxyPassword
+    jvalue = json_object_get(app, "proxyPassword");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        json_decref(config);
+        return false;
+    }
+
+    proxyPassword_ = json_string_value(jvalue);
+
+    // proxyPort
+    jvalue = json_object_get(app, "proxyPort");
+    if (!jvalue || !json_is_integer(jvalue))
+    {
+        json_decref(config);
+        return false;
+    }
+
+    proxyPort_ = json_integer_value(jvalue);
+
+    // authEnabled
+    jvalue = json_object_get(app, "authEnabled");
+    if (!jvalue || !json_is_boolean(jvalue))
+    {
+        json_decref(config);
+        return false;
+    }
+
+    authEnabled_ = json_is_true(jvalue);
+
+    // authUsername
+    jvalue = json_object_get(app, "authUsername");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        json_decref(config);
+        return false;
+    }
+
+    authUsername_ = json_string_value(jvalue);
+
+    // authPassword
+    jvalue = json_object_get(app, "authPassword");
+    if (!jvalue || !json_is_string(jvalue))
+    {
+        json_decref(config);
+        return false;
+    }
+
+    authPassword_ = json_string_value(jvalue);
+
     json_decref(config);
     return true;
 
@@ -577,5 +749,86 @@ void UWKConfig::SetServerID(int serverID)
 {
     serverID_ = serverID;
 }
+
+bool UWKConfig::GetProxyEnabled()
+{
+    return proxyEnabled_;
+}
+
+void UWKConfig::GetProxyHostname(std::string& hostName)
+{
+    hostName = proxyHostName_;
+}
+
+void UWKConfig::GetProxyUsername(std::string& username)
+{
+    username = proxyUsername_;
+}
+
+void UWKConfig::GetProxyPassword(std::string& password)
+{
+    password = proxyPassword_;
+}
+
+int  UWKConfig::GetProxyPort()
+{
+    return proxyPort_;
+}
+
+bool UWKConfig::GetAuthEnabled()
+{
+    return authEnabled_;
+}
+
+void UWKConfig::GetAuthUsername(std::string& username)
+{
+    username = authUsername_;
+}
+
+void UWKConfig::GetAuthPassword(std::string& password)
+{
+    password = authPassword_;
+}
+
+void UWKConfig::SetProxyEnabled(bool value)
+{
+    proxyEnabled_ = value;
+}
+
+void UWKConfig::SetProxyHostname(const std::string& hostName)
+{
+    proxyHostName_ = hostName;
+}
+
+void UWKConfig::SetProxyUsername(const std::string& username)
+{
+    proxyUsername_ = username;
+}
+
+void UWKConfig::SetProxyPassword(const std::string& password)
+{
+    proxyPassword_ = password;
+}
+
+void UWKConfig::SetProxyPort(int port)
+{
+    proxyPort_ = port;
+}
+
+void UWKConfig::SetAuthEnabled(bool value)
+{
+    authEnabled_ = value;
+}
+
+void UWKConfig::SetAuthUsername(const std::string& username)
+{
+    authUsername_ = username;
+}
+
+void UWKConfig::SetAuthPassword(const std::string& password)
+{
+    authPassword_ = password;
+}
+
 
 

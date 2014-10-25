@@ -53,6 +53,17 @@ public class UWKPlugin
         app["targetFrameRate"] = Application.targetFrameRate;
         app["graphicsDeviceVersion"] = SystemInfo.graphicsDeviceVersion;
         app["imeEnabled"] = UWKCore.IMEEnabled;
+
+        // Proxy
+        app["proxyEnabled"] = UWKConfig.ProxyEnabled;
+        app["proxyHostName"] = UWKConfig.ProxyHostname;
+        app["proxyUsername"] = UWKConfig.ProxyUsername;
+        app["proxyPassword"] = UWKConfig.ProxyPassword;
+        app["proxyPort"] = UWKConfig.ProxyPort;
+        app["authEnabled"] = UWKConfig.AuthEnabled;
+        app["authUsername"] = UWKConfig.AuthUsername;
+        app["authPassword"] = UWKConfig.AuthPassword;
+        
 #if UNITY_EDITOR 
 		app["companyName"] = PlayerSettings.companyName;
 		app["productName"] = PlayerSettings.productName;

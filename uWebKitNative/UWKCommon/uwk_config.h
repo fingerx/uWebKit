@@ -22,6 +22,17 @@ class UWKConfig
     static std::string graphicsDeviceVersion_;
     static std::string companyName_;
     static std::string productName_;
+
+    static bool proxyEnabled_;
+    static std::string proxyHostName_;
+    static std::string proxyUsername_;
+    static std::string proxyPassword_;
+    static int proxyPort_;
+
+    static bool authEnabled_;
+    static std::string authUsername_;
+    static std::string authPassword_;
+
     static bool imeEnabled_;
     static int serverID_;
 
@@ -47,6 +58,16 @@ public:
     static bool GetIMEEnabled();
     static int  GetServerID();
 
+    static bool GetProxyEnabled();
+    static void GetProxyHostname(std::string& hostName);
+    static void GetProxyUsername(std::string& username);
+    static void GetProxyPassword(std::string& password);
+    static int  GetProxyPort();
+
+    static bool GetAuthEnabled();
+    static void GetAuthUsername(std::string& username);
+    static void GetAuthPassword(std::string& password);
+
     // a combination of Company and Product name
     // which provides a folder as to not conflict
     // with other products using shared memory
@@ -70,6 +91,17 @@ public:
 
     static void SetCompanyName(const std::string& companyName);
     static void SetProductName(const std::string& productName);
+
+    // Proxy
+    static void SetProxyEnabled(bool value);
+    static void SetProxyHostname(const std::string& hostName);
+    static void SetProxyUsername(const std::string& username);
+    static void SetProxyPassword(const std::string& password);
+    static void SetProxyPort(int port);
+
+    static void SetAuthEnabled(bool value);
+    static void SetAuthUsername(const std::string& username);
+    static void SetAuthPassword(const std::string& password);
 
     static bool IsDirect3D9();
     static bool IsDirect3D11();
