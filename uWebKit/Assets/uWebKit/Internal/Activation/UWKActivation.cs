@@ -110,7 +110,7 @@ public class UWKActivation : MonoBehaviour
 						
 			GUILayout.Space (8);	
 			
-			GUILayout.Label ("uWebKit has 2 activations per product key.  Activation is a one time process per machine.  Email sales@uwebkit.com with any issues\n\nIMPORTANT: Please ensure Build Settings are set to PC/Mac Standalone before activating");
+			GUILayout.Label ("You can evaluate uWebKit without activating, select Activate Later below.\n\nuWebKit has 2 activations per product key.  Activation is a one time process per machine.  Email sales@uwebkit.com with any issues\n\nIMPORTANT:\n\n1) Please ensure Build Settings are set to PC/Mac Standalone before activating\n\n2) If you are behind a web proxy, edit UWKConfig.cs with proxy config");
 						
 			GUILayout.Space (16);			
 			
