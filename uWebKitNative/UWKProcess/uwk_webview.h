@@ -10,9 +10,7 @@
 
 #pragma once
 
-#include <QtWebKitWidgets>
-#include <QGraphicsView>
-#include <QGraphicsWebView>
+#include <QtWebEngineWidgets>
 
 #ifndef Q_MOC_RUN
 #include "UWKCommon/uwk_message.h"
@@ -28,7 +26,7 @@ namespace UWK
 class GpuSurface;
 class WebPage;
 
-class WebView : public QGraphicsWebView
+class WebView : public QWebEngineView
 {
     Q_OBJECT
 
@@ -60,8 +58,6 @@ class WebView : public QGraphicsWebView
 
     QSize frameContentsSize_;
     WebPage* page_;
-    QGraphicsView* graphicsView_;
-    QGraphicsScene* scene_;
 
     bool rendering_;
     GpuSurface* gpuSurface_;
@@ -79,13 +75,9 @@ class WebView : public QGraphicsWebView
 
     QBuffer cachedIcon_;
 
-    QPalette originalPagePalette_;
-
     bool alphaMaskEnabled_;
 
     uint32_t textCaretColor_;
-
-    QWebInspector* inspector_;
 
     void checkIcon();
 

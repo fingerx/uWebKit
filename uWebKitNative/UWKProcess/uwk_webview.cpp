@@ -46,14 +46,10 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
     progress_(0),
     alphaMaskEnabled_(false),
     textCaretColor_(0xFF000000),
-    inspector_(NULL),
     finalActivationTextSet_(false)
 {
     page_ = new WebPage(this);
     setPage(page_);
-
-    // take a snapshot of the original palette
-    originalPagePalette_ = page_->palette();
 
     buttonState_[0] = false;
     buttonState_[1] = false;
@@ -61,23 +57,10 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
 
     gpuSurface_ = GpuSurface::Create(maxWidth, maxHeight);
 
-    scene_ = new QGraphicsScene();
-    graphicsView_ = new QGraphicsView(scene_);
-    scene_->addItem(this);
-
-    // this is only a factor if QWebSettings::TiledBackingStoreEnabled is enabled
-    // though, after some testing it seems TiledBackingStore has numerous problems
-    setTiledBackingStoreFrozen(false);
-
-    graphicsView_->setInteractive(true);
-    graphicsView_->setCacheMode(QGraphicsView::CacheNone);
-    graphicsView_->setOptimizationFlag(QGraphicsView::DontSavePainterState, true);
-    graphicsView_->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, true);
-
     adjustSize(maxWidth, maxHeight);
 
     // signals
-    connect(page()->mainFrame(), SIGNAL(loadStarted()),
+    connect(this, SIGNAL(loadStarted()),
             this, SLOT(loadStarted()));
 
     connect(this, SIGNAL(loadFinished(bool)),
@@ -92,13 +75,15 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
     connect(this, SIGNAL(loadProgress(int)),
             this, SLOT(setProgress(int)));
 
-    connect(page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()),
+    connect(this, SIGNAL(javaScriptWindowObjectCleared()),
             this, SLOT(javaScriptWindowObjectCleared()));
 
-    connect(page()->networkAccessManager(),
+    /*
+    connect(this->networkAccessManager(),
             SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>& )),
             this,
             SLOT(handleSslErrors(QNetworkReply*, const QList<QSslError>& )));
+    */
 
     SetFrameRate(30);
 
@@ -119,18 +104,8 @@ WebView::~WebView()
     if (timerId_)
         killTimer(timerId_);
 
-    scene_->removeItem(this);
-
     delete gpuSurface_;
     delete page_;
-    delete graphicsView_;
-    delete scene_;
-
-    if (inspector_)
-    {
-        inspector_->hide();
-        delete inspector_;
-    }
 }
 
 void WebView::adjustSize(int width, int height)
@@ -143,16 +118,7 @@ void WebView::adjustSize(int width, int height)
 
     pageImage_ = QImage(width, height, QImage::Format_ARGB32_Premultiplied);
 
-    scene_->setSceneRect(QRect(0, 0, width, height));
-
-    graphicsView_->setFixedSize(width, height);
-    graphicsView_->setFrameShape(QFrame::NoFrame);
-    graphicsView_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    graphicsView_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
     this->resize(width, height);
-
-    page()->setViewportSize(QSize(width, height));
 
 }
 
@@ -160,7 +126,7 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
 {
     if (msg.type == UMSG_MOUSE_MOVE)
     {
-        QPoint p = graphicsView_->mapFromScene(QPoint(msg.iParams[0], msg.iParams[1]));
+        QPoint p(msg.iParams[0], msg.iParams[1]);
 
         Qt::MouseButton button = Qt::NoButton;
         Qt::MouseButtons buttons = Qt::NoButton;
@@ -171,16 +137,17 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
             buttons = Qt::LeftButton;
         }
 
+        grabMouse();
         QMouseEvent qm(QEvent::MouseMove, p, button, buttons,  Qt::NoModifier);
-        QApplication::sendEvent(graphicsView_->viewport(), &qm);
+        QApplication::sendEvent(this, &qm);
     }
     else if (msg.type == UMSG_MOUSE_DOWN)
     {
 
         QFocusEvent focus(QEvent::FocusIn);
-        QApplication::sendEvent(graphicsView_->viewport(), &focus);
+        QApplication::sendEvent(this, &focus);
 
-        QPoint p = graphicsView_->mapFromScene(QPoint(msg.iParams[0], msg.iParams[1]));
+        QPoint p(msg.iParams[0], msg.iParams[1]);
 
         // necessary?
         grabMouse();
@@ -188,12 +155,12 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
         Qt::MouseButton button = Qt::LeftButton;
         buttonState_[ButtonLeft] = true;
         QMouseEvent qm(QEvent::MouseButtonPress, p, button, button,  Qt::NoModifier);
-        QApplication::sendEvent(graphicsView_->viewport(), &qm);
+        QApplication::sendEvent(this, &qm);
 
     }
     else if (msg.type == UMSG_MOUSE_UP)
     {
-        QPoint p = graphicsView_->mapFromScene(QPoint(msg.iParams[0], msg.iParams[1]));
+        QPoint p(msg.iParams[0], msg.iParams[1]);
 
         // necessary?
         grabMouse();
@@ -201,11 +168,11 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
         Qt::MouseButton button = Qt::LeftButton;
         buttonState_[ButtonLeft] = false;
         QMouseEvent qm(QEvent::MouseButtonRelease, p, button, button,  Qt::NoModifier);
-        QApplication::sendEvent(graphicsView_->viewport(), &qm);
+        QApplication::sendEvent(this, &qm);
     }
     else if (msg.type == UMSG_MOUSE_SCROLL)
     {
-        QPoint p = graphicsView_->mapFromScene(QPoint(msg.iParams[0], msg.iParams[1]));
+        QPoint p(msg.iParams[0], msg.iParams[1]);
         float scroll = msg.fParams[0] * 10.0f;
 
         // necessary?
@@ -270,7 +237,7 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
         }
 
         QFocusEvent focus(QEvent::FocusIn);
-        QApplication::sendEvent(graphicsView_->viewport(), &focus);
+        QApplication::sendEvent(this, &focus);
 
         grabKeyboard();
 
@@ -283,14 +250,15 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
 
         QKeyEvent ke(msg.type == UMSG_KEY_DOWN ? QEvent::KeyPress : QEvent::KeyRelease, msg.iParams[0], keyMod, QString::fromLatin1(ascii));
 
-        QApplication::sendEvent(graphicsView_->viewport(), &ke);
+        QApplication::sendEvent(this, &ke);
 
-        ungrabKeyboard();
+        //ungrabKeyboard();
 
         //UWKLog::LogVerbose("Key %s: %i %i %i %i", msg.type == UMSG_KEY_UP ? "Up" : "Down", (int) msg.type, msg.iParams[0], msg.iParams[1], msg.iParams[2]);
     }
     else if (msg.type == UMSG_VIEW_EVALUATE_JAVASCRIPT)
     {
+        /*
         QString js = QtUtils::GetMessageQString(msg, 0);
 
         QVariant jresult = page()->mainFrame()->evaluateJavaScript(js);
@@ -304,6 +272,7 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
 
             UWKMessageQueue::Write(result);
         }
+        */
 
     }
     else if (msg.type == UMSG_JAVASCRIPT_MESSAGE)
@@ -386,7 +355,7 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
     }
     else if (msg.type == UMSG_VIEW_SETSCROLLPOSITION)
     {
-        page()->mainFrame()->setScrollPosition(QPoint(msg.iParams[0], msg.iParams[1]));
+        //page()->mainFrame()->setScrollPosition(QPoint(msg.iParams[0], msg.iParams[1]));
     }
     else if (msg.type == UMSG_IME_SETTEXT)
     {
@@ -403,7 +372,7 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
     }
     else if (msg.type == UMSG_VIEW_STOP)
     {
-        page_->triggerAction(QWebPage::Stop);
+        page_->triggerAction(QWebEnginePage::Stop);
     }
     else if (msg.type == UMSG_VIEW_SHOWINSPECTOR)
     {
@@ -437,6 +406,7 @@ void WebView::timerEvent(QTimerEvent *event)
     {
         rendering_ = true;
 
+        /*
         if (page()->mainFrame()->contentsSize() != frameContentsSize_)
         {
             frameContentsSize_ = page()->mainFrame()->contentsSize();
@@ -448,6 +418,7 @@ void WebView::timerEvent(QTimerEvent *event)
             cmsg.iParams[1] = frameContentsSize_.height();
             UWKMessageQueue::Write(cmsg);
         }
+        */
 
         gpuImage_.fill(Qt::transparent);
         pageImage_.fill(Qt::transparent);
@@ -461,7 +432,7 @@ void WebView::timerEvent(QTimerEvent *event)
         painter.setRenderHint(QPainter::TextAntialiasing, false);
         painter.setRenderHint(QPainter::SmoothPixmapTransform, false);
 
-        scene_->render(&painter);
+        render(&painter);
 
         QDateTime now = QDateTime::currentDateTime();
 
@@ -628,6 +599,7 @@ void WebView::setProgress( int progress)
 
 void WebView::checkIcon()
 {
+    /*
     if (icon().isNull())
         return;
 
@@ -654,6 +626,7 @@ void WebView::checkIcon()
     {
         UWKMessageQueue::Write(msg);
     }
+    */
 }
 
 void WebView::javaScriptWindowObjectCleared()
@@ -671,7 +644,7 @@ void WebView::handleSslErrors(QNetworkReply* reply, const QList<QSslError> &erro
 
 void WebView::setIME(const QString& ime)
 {
-    page()->mainFrame()->documentElement().evaluateJavaScript(QString::fromLatin1("UWK_TextElement.value = \"") + ime + QString::fromLatin1("\";"));
+   // page()->mainFrame()->documentElement().evaluateJavaScript(QString::fromLatin1("UWK_TextElement.value = \"") + ime + QString::fromLatin1("\";"));
 }
 
 
@@ -714,9 +687,9 @@ void WebView::registerIMEHandler()
     if (!UWKConfig::GetIMEEnabled())
         return;
 
-    page()->mainFrame()->addToJavaScriptWindowObject(QString::fromLatin1("UWK_View"), this);
+    //page()->mainFrame()->addToJavaScriptWindowObject(QString::fromLatin1("UWK_View"), this);
 
-    page()->mainFrame()->evaluateJavaScript(JavascriptEmbedded::GetIMEHandler());
+    //page()->mainFrame()->evaluateJavaScript(JavascriptEmbedded::GetIMEHandler());
 
 }
 
@@ -727,14 +700,14 @@ void WebView::setAlphaMask(bool enabled)
 
     if (enabled)
     {
-        QPalette palette = page_->palette();
-        palette.setBrush(QPalette::Base, Qt::transparent);
-        page_->setPalette(palette);
+        //QPalette palette = page_->palette();
+        //palette.setBrush(QPalette::Base, Qt::transparent);
+        //page_->setPalette(palette);
         setAttribute(Qt::WA_OpaquePaintEvent, false);
     }
     else
     {
-        page_->setPalette(originalPagePalette_);
+        //page_->setPalette(originalPagePalette_);
         setAttribute(Qt::WA_OpaquePaintEvent, true);
     }
 
@@ -755,6 +728,7 @@ void WebView::SetFrameRate(int framerate)
 
 void WebView::ShowInspector()
 {
+    /*
     if (inspector_)
         return;
 
@@ -763,17 +737,19 @@ void WebView::ShowInspector()
     inspector_ = new QWebInspector();
     inspector_->setPage(page_);
     inspector_->show();
+    */
 }
 
 void WebView::CloseInspector()
 {
+    /*
     if (!inspector_)
         return;
 
     inspector_->hide();
     delete inspector_;
     inspector_ = NULL;
-
+    */
 }
 
 

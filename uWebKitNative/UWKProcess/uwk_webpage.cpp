@@ -18,18 +18,15 @@
 namespace UWK
 {
 
-WebPage::WebPage(WebView* view) :
-    QWebPage(view)
+WebPage::WebPage(QWebEngineView* view) :
+    QWebEnginePage(view)
 {
     view_ = view;
 
-    setNetworkAccessManager(Engine::Instance()->GetNetworkAccessManager());
-
-    //connect(this, SIGNAL(repaintRequested(const QRect& dirtyRect)),
-    //        this, SLOT(repaintRequested(const QRect& dirtyRect)));
+    //setNetworkAccessManager(Engine::Instance()->GetNetworkAccessManager());
 
 }
-
+/*
 void WebPage::javaScriptAlert ( QWebFrame* frame, const QString& message)
 {
     Q_UNUSED(frame);
@@ -76,14 +73,10 @@ bool WebPage::acceptNavigationRequest(QWebFrame *frame, const QNetworkRequest &r
 
     return QWebPage::acceptNavigationRequest(frame, request, type);
 }
+*/
 
 
-void WebPage::repaintRequested(const QRect& dirtyRect)
-{
-    QWebPage::repaintRequested(dirtyRect);
-    //UWKLog::LogVerbose("repaintRequested: %i x %i", dirtyRect.width(), dirtyRect.height());
-}
-
+/*
 void WebPage::javaScriptConsoleMessage ( const QString &message, int lineNumber, const QString &sourceID )
 {
 
@@ -106,6 +99,7 @@ QString WebPage::userAgentForUrl(const QUrl & url) const
 
     return QWebPage::userAgentForUrl(url);
 }
+*/
 
 
 }

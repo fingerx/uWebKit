@@ -9,14 +9,14 @@
 
 #pragma once
 
-#include <QtWebKitWidgets>
+#include <QtWebEngineWidgets>
 
 namespace UWK
 {
 
 class WebView;
 
-class WebPage : public QWebPage
+class WebPage : public QWebEnginePage
 {
     Q_OBJECT
 
@@ -24,25 +24,20 @@ class WebPage : public QWebPage
 
 protected:
 
-    WebView* view_;
-    void javaScriptConsoleMessage ( const QString& message, int lineNumber, const QString& sourceID );
-    QString userAgentForUrl(const QUrl & url) const;
+    QWebEngineView* view_;
+    //void javaScriptConsoleMessage ( const QString& message, int lineNumber, const QString& sourceID );
+    //QString userAgentForUrl(const QUrl & url) const;
 
-    void javaScriptAlert (QWebFrame* frame, const QString& message );
-    bool javaScriptConfirm ( QWebFrame* frame, const QString& message );
+    //void javaScriptAlert (QWebFrame* frame, const QString& message );
+    //bool javaScriptConfirm ( QWebFrame* frame, const QString& message );
 
 public:
 
-    explicit WebPage(WebView* view);
+    explicit WebPage(QWebEngineView *view);
 
-    bool acceptNavigationRequest(QWebFrame *frame, const QNetworkRequest &request, NavigationType type);
+    //bool acceptNavigationRequest(QWebFrame *frame, const QNetworkRequest &request, NavigationType type);
 
     void setUserAgentOverride(const QString& agent) { userAgentOverride_ = agent; }
-
-
-public slots:
-
-    void repaintRequested(const QRect & dirtyRect);
 
 };
 

@@ -1,6 +1,6 @@
 include (../UWKNative.pri)
 
-QT += widgets webkitwidgets network
+QT += widgets webenginewidgets network
 
 CONFIG += qt
 

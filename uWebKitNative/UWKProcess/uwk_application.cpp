@@ -8,7 +8,7 @@
 *******************************************/
 
 #include <QtGui>
-#include <QtWebKit>
+#include <QtWebEngine>
 #include <QStyleFactory>
 
 #include "UWKCommon/uwk_config.h"
@@ -74,13 +74,13 @@ UWKApplication::UWKApplication(int &argc, char **argv)
     if (!UWKProcessClient::Initialize(parentpid, processdb))
         return;
 
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::JavascriptEnabled, true);
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::JavascriptCanAccessClipboard, true);
+    //QWebSettings::globalSettings()->setAttribute(QWebSettings::JavascriptEnabled, true);
+    //QWebSettings::globalSettings()->setAttribute(QWebSettings::JavascriptCanAccessClipboard, true);
 
     // plugins (Flash) disabled, will add an optional enable plugins, however default is off
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, false);
+    //QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, false);
 
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::DnsPrefetchEnabled, true);
+    //QWebSettings::globalSettings()->setAttribute(QWebSettings::DnsPrefetchEnabled, true);
 
     std::string _directory;
     UWKConfig::GetPersistentDataPath(_directory);
@@ -106,16 +106,16 @@ UWKApplication::UWKApplication(int &argc, char **argv)
     }
 
     // Only for QGraphicsView
-    QWebSettings::globalSettings()->setAttribute( QWebSettings::AcceleratedCompositingEnabled, true);
+    //QWebSettings::globalSettings()->setAttribute( QWebSettings::AcceleratedCompositingEnabled, true);
 
     // Unfortunately, as this helps performance a lot, this appears busted, it works fine if you don't scroll the page
     // QWebSettings::globalSettings()->setAttribute(QWebSettings::TiledBackingStoreEnabled, true);
 
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::OfflineStorageDatabaseEnabled, true);
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::LocalStorageEnabled, true);
-    QWebSettings::globalSettings()->setOfflineStoragePath(localStoragePath);
-    QWebSettings::globalSettings()->setOfflineWebApplicationCachePath(localStoragePath);
-    QWebSettings::globalSettings()->setIconDatabasePath(iconsPath);
+    //QWebSettings::globalSettings()->setAttribute(QWebSettings::OfflineStorageDatabaseEnabled, true);
+    //QWebSettings::globalSettings()->setAttribute(QWebSettings::LocalStorageEnabled, true);
+    //QWebSettings::globalSettings()->setOfflineStoragePath(localStoragePath);
+    //QWebSettings::globalSettings()->setOfflineWebApplicationCachePath(localStoragePath);
+    //QWebSettings::globalSettings()->setIconDatabasePath(iconsPath);
 
     // TODO: this is a Unity specific path
     std::string _cssPath;
@@ -124,7 +124,7 @@ UWKApplication::UWKApplication(int &argc, char **argv)
     cssPath += QString::fromLatin1("/StreamingAssets/uWebKit/Data/uwebkit.css");
 
     QUrl cssUrl(QString::fromUtf8("file://") + cssPath);
-    QWebSettings::globalSettings()->setUserStyleSheetUrl(cssUrl);
+    //QWebSettings::globalSettings()->setUserStyleSheetUrl(cssUrl);
 
     setStyle(QStyleFactory::create(QString::fromLatin1("Fusion")));
 

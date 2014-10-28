@@ -14,7 +14,6 @@
 #include "uwk_javascript_embedded.h"
 
 #include <QFile>
-#include <QWebFrame>
 
 namespace UWK
 {
@@ -34,6 +33,7 @@ JSBridge* JSBridge::Instance()
 
 void JSBridge::RefreshViewProperties(WebView* view)
 {
+    /*
     QWebFrame* frame = view->page()->mainFrame();
     QMapIterator<QString, JSObject*> i(properties_);
 
@@ -42,6 +42,7 @@ void JSBridge::RefreshViewProperties(WebView* view)
         i.next();
         frame->addToJavaScriptWindowObject(i.key(), i.value());
     }
+    */
 
 }
 
@@ -92,8 +93,9 @@ bool JSBridge::SetObjectProperty(const QString& objectName, const QString& propN
     return newjso;
 }
 
-void JSBridge::AddBridgeToView(WebView* view)
+void JSBridge::AddBridgeToView(WebView *view)
 {
+    /*
     QWebFrame* frame = view->page()->mainFrame();
 
     frame->addToJavaScriptWindowObject(QString::fromLatin1("UWK"), this);
@@ -107,6 +109,7 @@ void JSBridge::AddBridgeToView(WebView* view)
     setProperty("viewId", QVariant(view->GetID()));
 
     RefreshViewProperties(view);
+*/
 }
 
 void JSBridge::_sendMessage(unsigned int viewId, QString msgName, QString msgJSONValue)

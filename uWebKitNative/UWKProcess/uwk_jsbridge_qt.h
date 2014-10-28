@@ -13,8 +13,6 @@
 #include <QObject>
 #include <QMap>
 
-class QWebFrame;
-
 //#define UWK_USE_EXTERNAL_BRIDGE_JS
 
 namespace UWK
@@ -60,7 +58,6 @@ signals:
 public:
 
     void AddBridgeToView(WebView *view);
-
 
     void ReceiveMessage(const QString& msgName, const QString& msgJSON);
 
