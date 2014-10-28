@@ -62,9 +62,6 @@ class WebView : public QWebEngineView
     bool rendering_;
     GpuSurface* gpuSurface_;
 
-    bool cursorDraw_;
-    QDateTime cursorBlinkTime_;
-
     // as we're using offscreen rendering store vibility here
     // as well
     bool visible_;

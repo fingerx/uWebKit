@@ -25,6 +25,13 @@ Engine* Engine::sInstance_ = NULL;
 Engine::Engine() : shutdown_(false), networkAccessManager_(NULL)
 {
 
+    rootWidget_ = new QMainWindow();
+    rootWidget_->show();
+}
+
+Engine::~Engine()
+{
+    delete rootWidget_;
 }
 
 void Engine::Initialize()
@@ -113,6 +120,7 @@ void Engine::Update()
 
 void Engine::ProcessUWKMessage(const UWKMessage& msg)
 {
+     rootWidget_->hide();
     if (msg.type == UMSG_VIEW_CREATE)
     {
         std::string surl;

@@ -32,6 +32,7 @@ qint64 WebView::activationNoticesRemaining_ = 10;
 
 
 WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
+    QWebEngineView(Engine::Instance()->GetRootWidget()),
     id_(id),
     maxWidth_(maxWidth),
     maxHeight_(maxHeight),
@@ -40,8 +41,6 @@ WebView::WebView(uint32_t id, int maxWidth, int maxHeight) :
     gpuImage_(maxWidth_, maxHeight_, QImage::Format_ARGB32_Premultiplied),
     frameContentsSize_(-1, -1),
     rendering_(false),
-    cursorDraw_(true),
-    cursorBlinkTime_(QDateTime::currentDateTime()),
     visible_(true),
     progress_(0),
     alphaMaskEnabled_(false),
@@ -137,49 +136,60 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
             buttons = Qt::LeftButton;
         }
 
-        grabMouse();
+
+
+        QWidget* child =  this->findChild<QWidget*>();
+        child->grabMouse();
+
         QMouseEvent qm(QEvent::MouseMove, p, button, buttons,  Qt::NoModifier);
-        QApplication::sendEvent(this, &qm);
+        QApplication::sendEvent(child, &qm);
     }
     else if (msg.type == UMSG_MOUSE_DOWN)
     {
 
+        QWidget* child =  this->findChild<QWidget*>();
+
         QFocusEvent focus(QEvent::FocusIn);
-        QApplication::sendEvent(this, &focus);
+        QApplication::sendEvent(child, &focus);
 
         QPoint p(msg.iParams[0], msg.iParams[1]);
 
         // necessary?
-        grabMouse();
+        child->grabMouse();
 
         Qt::MouseButton button = Qt::LeftButton;
         buttonState_[ButtonLeft] = true;
         QMouseEvent qm(QEvent::MouseButtonPress, p, button, button,  Qt::NoModifier);
-        QApplication::sendEvent(this, &qm);
+        QApplication::sendEvent(child, &qm);
 
     }
     else if (msg.type == UMSG_MOUSE_UP)
     {
         QPoint p(msg.iParams[0], msg.iParams[1]);
 
+
+        QWidget* child =  this->findChild<QWidget*>();
+
         // necessary?
-        grabMouse();
+        child->grabMouse();
 
         Qt::MouseButton button = Qt::LeftButton;
         buttonState_[ButtonLeft] = false;
         QMouseEvent qm(QEvent::MouseButtonRelease, p, button, button,  Qt::NoModifier);
-        QApplication::sendEvent(this, &qm);
+        QApplication::sendEvent(child, &qm);
     }
     else if (msg.type == UMSG_MOUSE_SCROLL)
     {
         QPoint p(msg.iParams[0], msg.iParams[1]);
         float scroll = msg.fParams[0] * 10.0f;
 
+        QWidget* child =  this->findChild<QWidget*>();
+
         // necessary?
-        grabMouse();
+        child->grabMouse();
 
         QWheelEvent wheel(p, (int) scroll, Qt::NoButton, Qt::NoModifier);
-        QApplication::sendEvent(page_, &wheel);
+        QApplication::sendEvent(child, &wheel);
 
 /*
         QWebFrame* frame = page()->currentFrame();
@@ -198,6 +208,8 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
         //msg.iParams[0] = keyCode;
         //msg.iParams[1] = modifiers;
         //msg.iParams[2] = keyEvent->Character;
+
+        QWidget* child =  this->findChild<QWidget*>();
 
         uint32_t mods = msg.iParams[1];
 
@@ -223,23 +235,23 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
         {
             if (msg.type == UMSG_KEY_UP)
             {
-                if (mods & UWKKeyboard::Shift)
-                    focusNextPrevChild(false);
-                else
-                    focusNextPrevChild(true);
+                //if (mods & UWKKeyboard::Shift)
+                //    child->focusNextPrevChild(false);
+                //else
+                //    child->focusNextPrevChild(true);
 
-                return;
+                //return;
             }
             else
             {
-                return;
+                //return;
             }
         }
 
         QFocusEvent focus(QEvent::FocusIn);
-        QApplication::sendEvent(this, &focus);
+        QApplication::sendEvent(child, &focus);
 
-        grabKeyboard();
+        child->grabKeyboard();
 
         char ascii[2];
         ascii[0] = (char) msg.iParams[2];
@@ -250,7 +262,7 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
 
         QKeyEvent ke(msg.type == UMSG_KEY_DOWN ? QEvent::KeyPress : QEvent::KeyRelease, msg.iParams[0], keyMod, QString::fromLatin1(ascii));
 
-        QApplication::sendEvent(this, &ke);
+        QApplication::sendEvent(child, &ke);
 
         //ungrabKeyboard();
 
@@ -434,25 +446,14 @@ void WebView::timerEvent(QTimerEvent *event)
 
         render(&painter);
 
-        QDateTime now = QDateTime::currentDateTime();
-
-        if (cursorBlinkTime_.msecsTo(now) > 500)
-        {
-            cursorDraw_ = !cursorDraw_;
-            cursorBlinkTime_ = now;
-        }
-
-        if (cursorDraw_ && inputMethodQuery(Qt::ImMaximumTextLength).toInt() > 0)
-        {
-            QRect r = inputMethodQuery(Qt::ImCursorRectangle).toRect();
-            painter.fillRect(r, textCaretColor_);
-        }
-
         painter.end();
 
         QPainter gpuPainter(&gpuImage_);
 
         gpuPainter.drawImage(QPoint(0, 0), pageImage_);
+
+
+        QDateTime now = QDateTime::currentDateTime();
 
         if (Activation::GetActivationState() == ACTIVATION_NEEDKEY ||
             Activation::GetActivationState() == ACTIVATION_INVALID ||

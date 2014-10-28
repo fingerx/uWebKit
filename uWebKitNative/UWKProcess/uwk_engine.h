@@ -11,6 +11,7 @@
 
 #include <QMap>
 #include <QUrl>
+#include <QWidget>
 
 #include "UWKCommon/uwk_common.h"
 #include "UWKCommon/uwk_message.h"
@@ -25,6 +26,9 @@ class WebView;
 
 class Engine
 {
+
+    QWidget* rootWidget_;
+
     QMap<uint32_t, WebView*> viewMap_;
 
     bool shutdown_;
@@ -36,6 +40,7 @@ class Engine
     void CreateWebView(uint32_t id, int maxWidth, int maxHeight, const QUrl& initialURL);
 
     Engine();
+    ~Engine();
 
 public:
 
@@ -51,6 +56,8 @@ public:
     bool ShutdownReceived() { return shutdown_; }
 
     void ConfigureProxy();
+
+    QWidget* GetRootWidget() { return rootWidget_; }
 
     NetworkAccessManager* GetNetworkAccessManager();
     NetworkCookieJar* GetCookieJar();
