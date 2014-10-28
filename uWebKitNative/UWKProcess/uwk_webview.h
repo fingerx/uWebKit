@@ -14,7 +14,9 @@
 #include <QGraphicsView>
 #include <QGraphicsWebView>
 
+#ifndef Q_MOC_RUN
 #include "UWKCommon/uwk_message.h"
+#endif
 
 // IMPORTANT: Usage of this source code requires a uWebKit Source License
 // please see the UWEBKIT_SOURCE_LICENSE.txt in the root folder

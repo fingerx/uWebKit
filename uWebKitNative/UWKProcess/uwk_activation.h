@@ -12,7 +12,9 @@
 #pragma once
 
 
+#ifndef Q_MOC_RUN
 #include "UWKCommon/uwk_message.h"
+#endif
 #include "uwk_activationrequest.h"
 
 #include <QtCore>
