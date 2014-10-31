@@ -16,7 +16,7 @@ else
     abort("Unknown host config: Config::CONFIG['host_os']: #{Config::CONFIG['host_os']}")
 end
 
-$UWEBKIT_BUILD_ARCH = "32"
+$UWEBKIT_BUILD_ARCH = "64"
 
 if $UWEBKIT_HOST_OS == 'darwin'
     $numCores = Integer(`sysctl hw.ncpu | awk '{print $2}'`)
@@ -34,13 +34,13 @@ $RAKE_ROOT = File.dirname(__FILE__)
 # Specify the build target - Debug, Release, RelMinSize, RelWithDebug
 $UWEBKIT_BUILD_TARGET = "release" # "debug"
 
-$QT_VERSION = "5.3"
-$QT_FULL_VERSION = "5.3.1"
+$QT_VERSION = "5.4"
+$QT_FULL_VERSION = "5.4.0-beta"
 
 $QT_DIR_BUILD = "temp/build#{$UWEBKIT_BUILD_ARCH}"
 $QT_DIR_PREFIX = "#{$RAKE_ROOT}/temp/build#{$UWEBKIT_BUILD_ARCH}/Qt-#{$QT_FULL_VERSION}"        
 
-$QT_DOWNLOAD_URL = "http://qtmirror.ics.com/pub/qtproject/official_releases/qt/#{$QT_VERSION}/#{$QT_FULL_VERSION}/single/qt-everywhere-opensource-src-#{$QT_FULL_VERSION}.#{$QT_ARCHIVE_EXTENSION}"
+$QT_DOWNLOAD_URL = "http://anychimirror101.mirrors.tds.net/pub/Qt/development_releases/qt/#{$QT_VERSION}/#{$QT_FULL_VERSION}/single/qt-everywhere-opensource-src-#{$QT_FULL_VERSION}.#{$QT_ARCHIVE_EXTENSION}"
 $QT_SOURCE_ARCHIVE = "qt.#{$QT_ARCHIVE_EXTENSION}"
 $QT_DIR_SOURCE = "#{$QT_DIR_BUILD}/qt-everywhere-opensource-src-#{$QT_FULL_VERSION}"
 
@@ -149,11 +149,11 @@ namespace :qt do
             Dir.chdir($QT_DIR_SOURCE) do
 
                 #patch Qt
-                sh "cp  #{$RAKE_ROOT}/QtPatches/Mac/qtbase/src/plugins/platforms/cocoa/* ./qtbase/src/plugins/platforms/cocoa"
-                sh "cp  #{$RAKE_ROOT}/QtPatches/Mac/qtbase/src/network/access/* ./qtbase/src/network/access"
+                #sh "cp  #{$RAKE_ROOT}/QtPatches/Mac/qtbase/src/plugins/platforms/cocoa/* ./qtbase/src/plugins/platforms/cocoa"
+                #sh "cp  #{$RAKE_ROOT}/QtPatches/Mac/qtbase/src/network/access/* ./qtbase/src/network/access"
 
-                sh "./configure -prefix #{$QT_DIR_PREFIX} -confirm-license -#{$QT_BUILD_TARGET} -platform #{platform} -no-c++11 -opensource -nomake examples -nomake tests"
-                sh "make -j#{$numCores} module-qtwebkit"
+                sh "./configure -prefix #{$QT_DIR_PREFIX} -confirm-license -#{$QT_BUILD_TARGET} -platform #{platform} -no-c++11 -opensource -skip qtwebkit -nomake examples -nomake tests"
+                sh "make -j#{$numCores}"
                 sh "make -j1 install"           
                 
             end
