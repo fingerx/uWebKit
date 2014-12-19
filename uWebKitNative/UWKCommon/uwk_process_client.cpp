@@ -49,7 +49,7 @@ bool UWKProcessClient::Update()
     // every 5 seconds update the timestamp in the process db and check for server timeout
     Timestamp::TimeDiff diff = (Timestamp() - updateTime_) / 1000;
 
-    if (diff > (5000 * 1))
+    if (diff > 2500)
     {
         bool terminated;
         if (UWKProcessDB::Instance()->CheckProcessTimeout(parentPID_, true, terminated))
@@ -61,8 +61,10 @@ bool UWKProcessClient::Update()
                 return false;
         }
 
-        UWKProcessDB::Instance()->UpdateClientTimestamp(Process::id());
-        updateTime_ = Timestamp();
+        if (UWKProcessDB::Instance()->UpdateClientTimestamp(Process::id()))
+            updateTime_ = Timestamp();
+        else
+            updateTime_ = Timestamp() - (500 * 1000); // try again in 500ms
     }
 
     return true;

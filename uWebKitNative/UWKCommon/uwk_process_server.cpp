@@ -43,13 +43,15 @@ bool UWKProcessServer::Update()
     if (!renderProcessHandle_)
         return false;
 
-    // every 5 seconds update the timestamp in the process db
+    // every 2.5 seconds update the timestamp in the process db
     Timestamp::TimeDiff diff = (Timestamp() - updateTime_) / 1000;
-    if (diff > (5000 * 1))
+    if (diff > 2500)
     {
-        updateTime_ = Timestamp();
-
-        UWKProcessDB::Instance()->UpdateServerTimestamp(Process::id());
+        
+        if (UWKProcessDB::Instance()->UpdateServerTimestamp(Process::id()))
+            updateTime_ = Timestamp();    
+        else
+            updateTime_ = Timestamp()  - (500 * 1000); // try aggain in 500 ms
 
         if (renderProcessPID_)
         {

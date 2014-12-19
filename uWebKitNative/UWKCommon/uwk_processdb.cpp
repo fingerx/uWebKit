@@ -138,7 +138,7 @@ bool UWKProcessDB::CheckProcessTimeout(const UWKProcessCommon::PID& pid, bool se
 
     ss << "WHERE pid = ";
     ss << pid;
-    ss << " AND timestamp < datetime('now','-15 seconds');";
+    ss << " AND timestamp < datetime('now','-25 seconds');";
 
     char* errMsg = NULL;
     QueryResult result;
