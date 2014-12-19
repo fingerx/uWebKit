@@ -26,7 +26,7 @@ public class ViewResizeTest : MonoBehaviour
 
     public virtual void Start()
     {
-    	view = gameObject.AddComponent("UWKWebView") as UWKWebView;
+    	view = gameObject.AddComponent<UWKWebView>();
         view.URL = URL;
         view.MaxWidth = MaxWidth;
         view.MaxHeight = MaxHeight;

@@ -207,7 +207,7 @@ public class UWKWebView : MonoBehaviour
         createMaxHeight = maxHeight;
 
         // create the view component
-        UWKWebView view = gameObject.AddComponent("UWKWebView") as UWKWebView;
+        UWKWebView view = gameObject.AddComponent<UWKWebView>();
 
         // no longer in create mode
         createMode = false;

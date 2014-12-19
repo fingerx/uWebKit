@@ -22,7 +22,7 @@ public class ViewStressTest : MonoBehaviour
     {
     	for (int i = 0; i < testViews; i++)
     	{
-            UWKWebView view = gameObject.AddComponent("UWKWebView") as UWKWebView;
+            UWKWebView view = gameObject.AddComponent<UWKWebView>();
             view.URL = urls[urlCounter++];
             urlCounter %= urls.Length;
             view.MaxWidth = viewWidth;
@@ -66,7 +66,7 @@ public class ViewStressTest : MonoBehaviour
                 {
                     while (views.Count < 16)
                     {
-                        view = gameObject.AddComponent("UWKWebView") as UWKWebView;
+                        view = gameObject.AddComponent<UWKWebView>();
                         view.URL = urls[urlCounter++];
                         urlCounter %= urls.Length;
                         view.MaxWidth = viewWidth;

@@ -38,7 +38,7 @@ public class FacebookExampleMenu : MonoBehaviour
 		{	
 			if (gameObject.GetComponent<SourceCodePopup>() == null)
 			{
-				sourcePopup = gameObject.AddComponent("SourceCodePopup") as SourceCodePopup; 		
+				sourcePopup = gameObject.AddComponent<SourceCodePopup>(); 		
 				sourcePopup.URL = "https://github.com/uWebKit/uWebKit/tree/uWebKit2-Beta/uWebKit/Assets/uWebKitExamples/Facebook";
 			}
 			else

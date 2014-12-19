@@ -43,7 +43,7 @@ public class WebTextureExample : MonoBehaviour
 		{	
 			if (gameObject.GetComponent<SourceCodePopup>() == null)
 			{
-				sourcePopup = gameObject.AddComponent("SourceCodePopup") as SourceCodePopup; 		
+				sourcePopup = gameObject.AddComponent<SourceCodePopup>(); 		
 				sourcePopup.URL = "https://github.com/uWebKit/uWebKit/blob/uWebKit2-Beta/uWebKit/Assets/uWebKitExamples/Scripts/WebTexture.cs";
 				webTexture.HasFocus = false;
 			}
