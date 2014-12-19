@@ -36,11 +36,19 @@ public class WebTexture : MonoBehaviour
 
         view.SetAlphaMask(AlphaMask);
 
+#if UNITY_5_0
+        if (GetComponent<Renderer>() != null)
+            GetComponent<Renderer>().material.mainTexture = view.WebTexture;
+
+        if (GetComponent<GUITexture>() != null)
+            GetComponent<GUITexture>().texture = view.WebTexture;
+#else
         if (renderer != null)
             renderer.material.mainTexture = view.WebTexture;
 
         if (guiTexture != null)
             guiTexture.texture = view.WebTexture;
+#endif            
         
     }
     
