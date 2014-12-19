@@ -15,6 +15,7 @@
 #include "uwk_process_client.h"
 #include "uwk_process_server.h"
 #include "uwk_process_utils.h"
+#include "Poco/String.h"
 
 #ifndef _MSC_VER
 // for kill()
@@ -408,6 +409,9 @@ void UWKProcessDB::RegisterServer(UWKProcessServer* server)
 
     std::string config;
     UWKConfig::GetJSON(config);
+
+    // escape ' to '' for SQL
+    config = Poco::replace(config, std::string("'"), std::string("''"));
 
     ss << "INSERT INTO servers (pid, config, id) VALUES ( ";
     ss << server->pid_;
