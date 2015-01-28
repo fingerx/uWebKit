@@ -44,7 +44,17 @@ public class UWKPlugin
         djson["application"] = app = new Dictionary<string,object>();
 
         app["hasProLicense"] = Application.HasProLicense();
-        app["dataPath"] = Application.dataPath;
+
+        string dataPath = Application.dataPath;
+
+        #if UNITY_5_0
+            #if !UNITY_EDITOR
+            // Unity 5 bug
+            dataPath += "/Resources";                
+            #endif 
+        #endif
+
+        app["dataPath"] = dataPath;
         app["persistentDataPath"] = Application.persistentDataPath;
         app["temporaryCachePath"] = Application.temporaryCachePath;
         app["isEditor"] = Application.isEditor;
