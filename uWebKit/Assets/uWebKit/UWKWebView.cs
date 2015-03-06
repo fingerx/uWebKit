@@ -544,6 +544,37 @@ public class UWKWebView : MonoBehaviour
         uevent.KeyCode = (uint) keyEvent.keyCode;
         uevent.Character = (uint) keyEvent.character;
 
+// Fix mac deployment Unity key handling bug
+#if !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
+        if (keyEvent.command && (keyEvent.keyCode == KeyCode.V || keyEvent.keyCode == KeyCode.A || keyEvent.keyCode == KeyCode.C))            
+        {
+            if (keyEvent.type != EventType.KeyDown)
+                return;
+
+            uevent.Type = 1u;
+            uevent.KeyCode = (uint) keyEvent.keyCode;
+            uevent.Modifiers |= (uint) UnityKeyModifiers.CommandWin;
+
+            if (keyEvent.keyCode == KeyCode.V)
+                uevent.Character = (uint) 'v';
+            if (keyEvent.keyCode == KeyCode.A)
+                uevent.Character = (uint) 'a';
+            if (keyEvent.keyCode == KeyCode.C)
+                uevent.Character = (uint) 'c';
+
+
+            UWKPlugin.UWK_PostUnityKeyEvent(ID, ref uevent);
+
+            uevent.Type = 0u;
+            UWKPlugin.UWK_PostUnityKeyEvent(ID, ref uevent);
+
+            return;
+
+        }
+#endif
+#endif        
+
         // encode modifiers
         uevent.Modifiers = 0;
 
