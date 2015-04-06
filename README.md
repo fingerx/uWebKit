@@ -19,7 +19,7 @@ uWebKit2 is [available for purchase](http://uwebkit.com/store) at $95/seat. A se
 
 Please use this Unity forum thread for uWebKit discussion [http://forum.unity3d.com/threads/uwebkit-html5-for-unity-pro.193978](http://forum.unity3d.com/threads/uwebkit-html5-for-unity-pro.193978)
 
-### uWebKit2 for Unity Pro Features:
+### uWebKit2 for Unity 5 Features:
 
 + Excellent integration with the Unity3D editor including simple deployment   
 
@@ -58,7 +58,7 @@ If you're interested in a uWebKit2 source license, which allows source customiza
 
 Please report issues with uWebKit using the [GitHub Issue Tracker](https://github.com/uWebKit/uWebKit/issues)
 
-uWebKit is (C) 2014 THUNDERBEAST GAMES, LLC
+uWebKit is (C) 2015 THUNDERBEAST GAMES, LLC
 
 
 
