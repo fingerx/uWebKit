@@ -39,7 +39,7 @@ Please use this Unity forum thread for uWebKit discussion [http://forum.unity3d.
 
 + Windows/Mac 32/64 bit platforms
 
-+ High performance Direct3D9/11 and OpenGL renderers
++ High performance renderers, Direct3D9/11 on Windows and OpenGL on Mac
 
 + Web rendering implemented as a subprocess, keeps your application memory space clean with ability to restart the web process on demand  
 
