@@ -274,14 +274,13 @@ void WebView::ProcessUWKMessage(const UWKMessage& msg)
 
         grabKeyboard();
 
-        char ascii[2];
-        ascii[0] = (char) msg.iParams[2];
-        ascii[1] = 0;
-
+        unsigned keycode = msg.iParams[2];
         if (mods)
-            ascii[0] = 0;
+            keycode = 0;
 
-        QKeyEvent ke(msg.type == UMSG_KEY_DOWN ? QEvent::KeyPress : QEvent::KeyRelease, msg.iParams[0], keyMod, QString::fromLatin1(ascii));
+        QString keystring = QChar(keycode);
+
+        QKeyEvent ke(msg.type == UMSG_KEY_DOWN ? QEvent::KeyPress : QEvent::KeyRelease, msg.iParams[0], keyMod, keystring);
 
         QApplication::sendEvent(graphicsView_->viewport(), &ke);
 
