@@ -43,7 +43,7 @@ public static class UWKDeploySupport
         bool linuxBuild = target == BuildTarget.StandaloneLinux || target == BuildTarget.StandaloneLinux64 || target == BuildTarget.StandaloneLinuxUniversal;
         bool osxBuild = target == BuildTarget.StandaloneOSXIntel || target == BuildTarget.StandaloneOSXIntel64 || target == BuildTarget.StandaloneOSXUniversal;
 
-        #if UNITY_5_0
+        #if !UNITY_4_6
         bool iosBuild = target == BuildTarget.iOS;
         #else
         bool iosBuild = target == BuildTarget.iPhone;
@@ -66,7 +66,7 @@ public static class UWKDeploySupport
         }
         else if (osxBuild)
         {
-            #if UNITY_5_0
+            #if !UNITY_4_6
             assetDirectoryPrefix = path + "/Contents/Resources/Data/StreamingAssets/";
             #else
             assetDirectoryPrefix = path + "/Contents/Data/StreamingAssets/";

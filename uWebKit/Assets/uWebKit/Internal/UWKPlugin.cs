@@ -47,7 +47,7 @@ public class UWKPlugin
 
         string dataPath = Application.dataPath;
 
-        #if UNITY_5_0
+        #if !UNITY_4_6
             #if !UNITY_EDITOR && UNITY_STANDALONE_OSX
             // Unity 5 bug
             dataPath += "/Resources";                
