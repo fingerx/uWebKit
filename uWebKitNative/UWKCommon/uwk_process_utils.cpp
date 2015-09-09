@@ -1,9 +1,9 @@
 /******************************************
-  * uWebKit 
+  * uWebKit
   * (c) 2014 THUNDERBEAST GAMES, LLC
   * website: http://www.uwebkit.com email: sales@uwebkit.com
   * Usage of this source code requires a uWebKit Source License
-  * Please see UWEBKIT_SOURCE_LICENSE.txt in the root folder 
+  * Please see UWEBKIT_SOURCE_LICENSE.txt in the root folder
   * for details
 *******************************************/
 
@@ -145,12 +145,10 @@ bool UWKProcessUtils::CompareExecutablePaths(const std::string& path1, const std
         if ( (path1[i] == '/' || path1[i] == '\\') && (path2[i] == '/' || path2[i] == '\\'))
             continue;
 
-        if ( path1[i] != path2[i] )
+        if ( tolower(path1[i]) != tolower(path2[i]) )
             return false;
     }
 
     return true;
 
 }
-
-
