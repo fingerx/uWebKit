@@ -1,9 +1,9 @@
 /******************************************
-  * uWebKit 
+  * uWebKit
   * (c) 2014 THUNDERBEAST GAMES, LLC
   * website: http://www.uwebkit.com email: sales@uwebkit.com
   * Usage of this source code requires a uWebKit Source License
-  * Please see UWEBKIT_SOURCE_LICENSE.txt in the root folder 
+  * Please see UWEBKIT_SOURCE_LICENSE.txt in the root folder
   * for details
 *******************************************/
 
@@ -11,6 +11,9 @@
 #include "Poco/Path.h"
 #include "Poco/Base64Encoder.h"
 #include "Poco/Base64Decoder.h"
+#include "Poco/Thread.h"
+#include "Poco/Runnable.h"
+
 #include "uwk_config.h"
 #include "uwk_process_server.h"
 #include "uwk_processdb.h"
@@ -20,12 +23,15 @@ using Poco::Path;
 using Poco::Base64Encoder;
 using Poco::Base64Decoder;
 
+
 UWKProcessServer* UWKProcessServer::sInstance_ = NULL;
 
 UWKProcessServer::UWKProcessServer(const PID& pid) : UWKProcessCommon(pid),
     renderProcessHandle_(NULL),
     renderProcessPID_(0),
-    serverID_(0)
+    serverID_(0),
+    stopUpdateThread_(false),
+    signalRestart_(false)
 {
 
 }
@@ -38,46 +44,75 @@ UWKProcessServer::~UWKProcessServer()
 
 }
 
+void UWKProcessServer::run()
+{
+
+  Timestamp updateTime;
+
+  while (true)
+  {
+      updateMutex_.lock();
+
+      if (stopUpdateThread_)
+      {
+          updateMutex_.unlock();
+          break;
+      }
+
+      Timestamp::TimeDiff diff = (Timestamp() - updateTime_) / 1000;
+
+      if (diff < 2500)
+      {
+          updateMutex_.unlock();
+          Poco::Thread::sleep(100);
+          continue;
+      }
+
+
+      if (UWKProcessDB::Instance()->UpdateServerTimestamp(Process::id()))
+          updateTime_ = Timestamp();
+      else
+          updateTime_ = Timestamp()  - (500 * 1000); // try aggain in 500 ms
+
+      if (renderProcessPID_)
+      {
+          bool terminated;
+          if (UWKProcessDB::Instance()->CheckProcessTimeout(renderProcessPID_, false, terminated))
+          {
+              if (!terminated)
+              {
+                  // kill and then update in 2 seconds
+                  updateTime_ -= 1000 * 3000;
+                  //UWKLog::LogVerbose("UWKProcess has timed out, sending kill");
+                  Poco::Process::kill(*renderProcessHandle_);
+              }
+              else
+              {
+                  signalRestart_ = true;
+                  //UWKLog::LogVerbose("UWKProcess has exited");
+              }
+          }
+      }
+
+      updateMutex_.unlock();
+  }
+
+}
+
 bool UWKProcessServer::Update()
 {
+    if (!updateMutex_.tryLock())
+      return false;
+
     if (!renderProcessHandle_)
         return false;
 
-    // every 2.5 seconds update the timestamp in the process db
-    Timestamp::TimeDiff diff = (Timestamp() - updateTime_) / 1000;
-    if (diff > 2500)
-    {
-        
-        if (UWKProcessDB::Instance()->UpdateServerTimestamp(Process::id()))
-            updateTime_ = Timestamp();    
-        else
-            updateTime_ = Timestamp()  - (500 * 1000); // try aggain in 500 ms
+    bool ret = signalRestart_;
+    signalRestart_ = false;
 
-        if (renderProcessPID_)
-        {
-            bool terminated;
-            if (UWKProcessDB::Instance()->CheckProcessTimeout(renderProcessPID_, false, terminated))
-            {
-                if (!terminated)
-                {
-                    // kill and then update in 2 seconds
-                    updateTime_ -= 1000 * 3000;
-                    UWKLog::LogVerbose("UWKProcess has timed out, sending kill");
-                    Poco::Process::kill(*renderProcessHandle_);
-                    return false;
-                }
-                else
-                {
-                    UWKLog::LogVerbose("UWKProcess has exited");
-                }
+    updateMutex_.unlock();
 
-                return true;
-            }
-        }
-    }
-
-    return false;
-
+    return ret;
 }
 
 bool UWKProcessServer::SpawnClient(const Process::Args& args)
@@ -184,12 +219,20 @@ void UWKProcessServer::Initialize()
 
     UWKConfig::SetServerID(sInstance_->serverID_);
 
+    sInstance_->updateThread_.start(*sInstance_);
+
 }
 
 void UWKProcessServer::Shutdown()
 {
     if (!sInstance_)
         return;
+
+    sInstance_->updateMutex_.lock();
+    sInstance_->stopUpdateThread_ = true;
+    sInstance_->updateMutex_.unlock();
+
+    sInstance_->updateThread_.join();
 
     UWKProcessDB::Shutdown();
 
