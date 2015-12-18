@@ -1,5 +1,5 @@
 /******************************************
-  * uWebKit 
+  * uWebKit
   * (c) 2014 THUNDERBEAST GAMES, LLC
   * http://www.uwebkit.com
   * sales@uwebkit.com
@@ -55,12 +55,12 @@ public delegate void JSMessageReceivedDelegate(UWKWebView view, string message, 
 /// <summary>
 /// RequestNewViewDelegate - Event fired when the view wants to open a new view (for example a popup)
 /// </summary>
-public delegate void RequestNewViewDelegate (UWKWebView view, string url);       
+public delegate void RequestNewViewDelegate (UWKWebView view, string url);
 
 /// <summary>
 /// JSEvalDelegate - Event fired when return value of some evaluated Javascript is returned
 /// </summary>
-public delegate void JSEvalDelegate (string value); 
+public delegate void JSEvalDelegate (string value);
 
 /// <summary>
 /// WebView component used to render and interact with web content
@@ -72,51 +72,51 @@ public class UWKWebView : MonoBehaviour
 
     /// <summary>
     /// The initial URL to load
-    /// </summary>    
+    /// </summary>
     public string URL;
 
     /// <summary>
     /// Gets the current width of the UWKWebView
-    /// </summary>        
+    /// </summary>
     public int CurrentWidth = 1024;
 
     /// <summary>
     /// Gets the current height of the UWKWebView
-    /// </summary>        
+    /// </summary>
     public int CurrentHeight = 1024;
 
     /// <summary>
-    /// Max width of the UWKWebView, defined at creation time.  It is possible to set the 
+    /// Max width of the UWKWebView, defined at creation time.  It is possible to set the
     /// view's current width to be equal or smaller than this value
-    /// </summary>    
+    /// </summary>
     public int MaxWidth = 1024;
 
     /// <summary>
-    /// Max height of the UWKWebView, defined at creation time.  It is possible to set the 
+    /// Max height of the UWKWebView, defined at creation time.  It is possible to set the
     /// view's current height to be equal or smaller than this value
-    /// </summary>        
+    /// </summary>
     public int MaxHeight = 1024;
-	
+
 	/// <summary>
 	/// Used to make the scroll wheel/trackpad more sensitive
-	/// </summary>        
+	/// </summary>
 	public float ScrollSensitivity = 1.0f;
 
 	#endregion
-	
+
 	/// <summary>
     /// Naivation for going backwards and forwards through the UWKWebView's history
     /// view's current height to be equal or smaller than this value
-    /// </summary>        
+    /// </summary>
     public enum Navigation
     {
         Forward = 0,
         Back
-    }   
+    }
 
     /// <summary>
     /// Gets the width of the UWKWebView's content
-    /// </summary>        
+    /// </summary>
     public int ContentWidth
     {
         get { return contentWidth; }
@@ -124,7 +124,7 @@ public class UWKWebView : MonoBehaviour
 
     /// <summary>
     /// Gets the height of the UWKWebView's content
-    /// </summary>        
+    /// </summary>
     public int ContentHeight
     {
         get { return contentHeight; }
@@ -132,72 +132,72 @@ public class UWKWebView : MonoBehaviour
 
     /// <summary>
     /// Texture2D which is used for the page's contents
-    /// </summary>        
+    /// </summary>
     [HideInInspector]
     public Texture2D WebTexture;
 
     /// <summary>
     /// Texture2D which is used for the page's icon
-    /// </summary>            
+    /// </summary>
     [HideInInspector]
     public Texture2D WebIcon;
 
     /// <summary>
     /// A unique ID for this UWKWebView
-    /// </summary>        
+    /// </summary>
     [HideInInspector]
     public uint ID;
 
     /// <summary>
     /// The title of the current loaded page
-    /// </summary>        
+    /// </summary>
     [HideInInspector]
     public string Title = "";
 
     /// <summary>
     /// Delegate fired when the URL of the page has changed
-    /// </summary>    
+    /// </summary>
     public URLChangedDelegate URLChanged;
 
     /// <summary>
     /// Delegate fired when the Title of the page has changed
-    /// </summary>    
+    /// </summary>
     public TitleChangedDelegate TitleChanged;
 
     /// <summary>
     /// Delegate fired when the page has finished loaded
-    /// </summary>    
+    /// </summary>
     public LoadFinishedDelegate LoadFinished;
 
     /// <summary>
     /// Delegate fired when the page has updated the loading progress 0-100
-    /// </summary>    
+    /// </summary>
     public LoadProgressDelegate LoadProgress;
 
     /// <summary>
     /// Delegate fired when the content size of the page has changed
-    /// </summary>    
+    /// </summary>
     public ContentSizeChangedDelegate ContentSizeChanged;
 
     /// <summary>
     /// Delegate fired when the page has output something to console.log
-    /// </summary>    
+    /// </summary>
     public JSConsoleDelegate JSConsole;
 
     /// <summary>
     /// Delegate fired when the page has received a Javascript message
-    /// </summary>    
+    /// </summary>
     public JSMessageReceivedDelegate JSMessageReceived;
 
     /// <summary>
     /// Delegate fired when the page has requested a popup window be created
-    /// </summary>    
+    /// </summary>
     public RequestNewViewDelegate NewViewRequested;
 
     /// <summary>
     /// Dynamically adds a UWKWebView component to a GameObject with initialization that isn't possible using GameObject.AddComponent due
     /// to lack of constructor parameters
-    /// </summary>    
+    /// </summary>
     public static UWKWebView AddToGameObject(GameObject gameObject, string url = "", int maxWidth = 1024, int maxHeight = 1024)
     {
         // setup some construction parameters used in Awake method
@@ -217,13 +217,13 @@ public class UWKWebView : MonoBehaviour
 
     /// <summary>
     /// Sets the current width and height of the UWKWebView
-    /// </summary>    
+    /// </summary>
     public void SetCurrentSize(int width, int height)
     {
 		if (currentWidth == width && currentHeight == height)
         {
             return;
-        }    
+        }
 
         if (width > MaxWidth)
             width = MaxWidth;
@@ -248,7 +248,7 @@ public class UWKWebView : MonoBehaviour
 
     /// <summary>
     /// Sets the zoom factor of the page
-    /// </summary>    
+    /// </summary>
     public void SetZoomFactor(float zoom)
     {
         UWKPlugin.UWK_MsgSetZoomFactor(ID, zoom);
@@ -256,7 +256,7 @@ public class UWKWebView : MonoBehaviour
 
     /// <summary>
     /// Sets the page's sceoll positon
-    /// </summary>    
+    /// </summary>
     public void SetScrollPosition(int x, int y)
     {
         UWKPlugin.UWK_MsgSetScrollPosition(ID, x, y);
@@ -264,7 +264,7 @@ public class UWKWebView : MonoBehaviour
 
     /// <summary>
     /// Globally disabled mouse and keyboard input from webviews
-    /// </summary>    
+    /// </summary>
     public static void EnableInput()
     {
         inputDisabled = false;
@@ -272,15 +272,15 @@ public class UWKWebView : MonoBehaviour
 
     /// <summary>
     /// Globally enables mouse and keyboard input from webviews
-    /// </summary>    
+    /// </summary>
     public static void DisableInput()
     {
         inputDisabled = true;
-    }    
+    }
 
     /// <summary>
-    /// Makes the page visible, the page will be updated and refreshed by the Wweb rendering process 
-    /// </summary>    
+    /// Makes the page visible, the page will be updated and refreshed by the Wweb rendering process
+    /// </summary>
     public void Show()
     {
         visible = true;
@@ -289,7 +289,7 @@ public class UWKWebView : MonoBehaviour
 
     /// <summary>
     /// Hide the page, the page will no longer be rendered by the web rendering process saving CPU time
-    /// </summary>    
+    /// </summary>
     public void Hide()
     {
         visible = false;
@@ -298,22 +298,22 @@ public class UWKWebView : MonoBehaviour
 
     /// <summary>
     /// Gets whether the page is visible or not
-    /// </summary>    
+    /// </summary>
     public bool Visible()
     {
         return visible;
-    }   
+    }
 
     /// <summary>
     /// Enabled or disables alpha mask rendering of view
-    /// </summary>    
+    /// </summary>
     public void SetAlphaMask(bool enabled)
     {
         UWKPlugin.UWK_MsgSetAlphaMask(ID, enabled);
-    }   
+    }
 
-    /// <summary>   
-    /// Sets the color of the text input caret in the form of 0xAARRGGBB 
+    /// <summary>
+    /// Sets the color of the text input caret in the form of 0xAARRGGBB
     /// Default is opaque black 0xFF000000
     /// </summary>
     public void SetTextCaretColor (uint color)
@@ -322,16 +322,16 @@ public class UWKWebView : MonoBehaviour
     }
 
     /// <summary>
-    /// Clears all user cookies 
-    /// </summary>    
+    /// Clears all user cookies
+    /// </summary>
     public static void ClearCookies()
     {
         UWKCore.ClearCookies();
-    }   
+    }
 
     /// <summary>
     /// Moves forward in the page history
-    /// </summary>    
+    /// </summary>
     public void Forward()
     {
         Navigate(Navigation.Forward);
@@ -339,7 +339,7 @@ public class UWKWebView : MonoBehaviour
 
     /// <summary>
     /// Moves back in the page history
-    /// </summary>    
+    /// </summary>
     public void Back()
     {
         Navigate(Navigation.Back);
@@ -347,7 +347,7 @@ public class UWKWebView : MonoBehaviour
 
     /// <summary>
     /// Navigates forward or back in the page history
-    /// </summary>    
+    /// </summary>
     public void Navigate(Navigation n)
     {
         UWKPlugin.UWK_MsgNavigate(ID, (int) n);
@@ -357,19 +357,19 @@ public class UWKWebView : MonoBehaviour
     /// Sets the framerate that the view is rendered at in the web rendering process
     /// Default is 30fps, to set 60fps you would call view.SetFrameRate(60);
     /// Please note that higher fps settings will increase CPU load
-    /// </summary>    
+    /// </summary>
     public void SetFrameRate(int framerate)
     {
         UWKPlugin.UWK_MsgSetFrameRate(ID, framerate);
     }
 
     /// <summary>
-    /// Sets the user agent the browser reports, setting the agent to "" 
+    /// Sets the user agent the browser reports, setting the agent to ""
     /// will use the default uWebKit agent
     /// </summary>
     public void SetUserAgent (string agent = "")
     {
-        UWKPlugin.UWK_MsgSetUserAgent(ID, agent);        
+        UWKPlugin.UWK_MsgSetUserAgent(ID, agent);
     }
 
     /// <summary>
@@ -377,11 +377,11 @@ public class UWKWebView : MonoBehaviour
     /// </summary>
     public void LoadURL (string url)
     {
-        
-        if (url == null || url.Length == 0)     
+
+        if (url == null || url.Length == 0)
             return;
 
-        UWKPlugin.UWK_MsgLoadURL(ID, url);        
+        UWKPlugin.UWK_MsgLoadURL(ID, url);
     }
 
     /// <summary>
@@ -434,7 +434,7 @@ public class UWKWebView : MonoBehaviour
     {
         var dict = new Dictionary<string,object> ();
         dict[key] = value;
-        SendJSMessage(msgName, dict);    
+        SendJSMessage(msgName, dict);
     }
 
     /// <summary>
@@ -444,7 +444,7 @@ public class UWKWebView : MonoBehaviour
     {
         var dict = new Dictionary<string,object> ();
         dict["value"] = value;
-        SendJSMessage(msgName, dict);    
+        SendJSMessage(msgName, dict);
     }
 
     /// <summary>
@@ -465,24 +465,24 @@ public class UWKWebView : MonoBehaviour
     public static string GetApplicationDataURL()
     {
         #if UNITY_STANDALONE_WIN
-            return "file:///" + Application.dataPath;       
+            return "file:///" + Application.dataPath;
         #else
             if (Application.isEditor)
                 return "file://" + Application.dataPath;
             else
                 return "file://" + Application.dataPath + "/Data";
-        #endif       
+        #endif
     }
 
     /// <summary>
     /// Process the mouse given mousePos coordinates
     /// </summary>
-    public void ProcessMouse(Vector3 mousePos)    
+    public void ProcessMouse(Vector3 mousePos)
     {
         if (inputDisabled)
             return;
 
-        //mousePos.y = Screen.height - mousePos.y;      
+        //mousePos.y = Screen.height - mousePos.y;
 
         if ((int)mousePos.x != lastMouseX || (int)mousePos.y != lastMouseY)
         {
@@ -490,10 +490,10 @@ public class UWKWebView : MonoBehaviour
             lastMouseX = (int) mousePos.x;
             lastMouseY = (int) mousePos.y;
         }
-        
+
         float scroll = Input.GetAxis ("Mouse ScrollWheel");
 
-        if (scroll != 0.0f) 
+        if (scroll != 0.0f)
         {
             #if UNITY_STANDALONE_WIN
             scroll *= 15.0f;
@@ -504,12 +504,12 @@ public class UWKWebView : MonoBehaviour
 			scroll *= ScrollSensitivity;
 
             UWKPlugin.UWK_MsgMouseScroll (ID, lastMouseX, lastMouseY, scroll);
-        }        
+        }
 
-        for (int i = 0; i < 3; i++) 
+        for (int i = 0; i < 3; i++)
         {
 
-            if (Input.GetMouseButtonDown (i)) 
+            if (Input.GetMouseButtonDown (i))
             {
                 if (!mouseStates[i])
                 {
@@ -518,7 +518,7 @@ public class UWKWebView : MonoBehaviour
                 }
             }
 
-            if (Input.GetMouseButtonUp (i)) 
+            if (Input.GetMouseButtonUp (i))
             {
                 if (mouseStates[i])
                 {
@@ -526,7 +526,7 @@ public class UWKWebView : MonoBehaviour
                     UWKPlugin.UWK_MsgMouseButtonUp (ID, (int)mousePos.x, (int)mousePos.y, i);
                 }
             }
-        }                   
+        }
     }
 
     /// <summary>
@@ -536,18 +536,22 @@ public class UWKWebView : MonoBehaviour
     {
 
         if (inputDisabled)
-            return;        
+            return;
 
-        UnityKeyEvent uevent = new UnityKeyEvent();            
+        UnityKeyEvent uevent = new UnityKeyEvent();
 
         uevent.Type = keyEvent.type == EventType.KeyDown ? 1u : 0u;
         uevent.KeyCode = (uint) keyEvent.keyCode;
         uevent.Character = (uint) keyEvent.character;
 
+        // Do not forward newline
+        if (uevent.Character == 10)
+    			return;
+
 // Fix mac deployment Unity key handling bug
 #if !UNITY_EDITOR
 #if UNITY_STANDALONE_OSX
-        if (keyEvent.command && (keyEvent.keyCode == KeyCode.V || keyEvent.keyCode == KeyCode.A || keyEvent.keyCode == KeyCode.C))            
+        if (keyEvent.command && (keyEvent.keyCode == KeyCode.V || keyEvent.keyCode == KeyCode.A || keyEvent.keyCode == KeyCode.C))
         {
             if (keyEvent.type != EventType.KeyDown)
                 return;
@@ -573,7 +577,7 @@ public class UWKWebView : MonoBehaviour
 
         }
 #endif
-#endif        
+#endif
 
         // encode modifiers
         uevent.Modifiers = 0;
@@ -601,7 +605,7 @@ public class UWKWebView : MonoBehaviour
 
         UWKPlugin.UWK_PostUnityKeyEvent(ID, ref uevent);
 
-    }    
+    }
 
 	public void DrawTexture(Rect position, bool alphaBlend = true)
 	{
@@ -613,7 +617,7 @@ public class UWKWebView : MonoBehaviour
 		sourceRect.x = sourceRect.x / tw ;
 		sourceRect.y =  1.0f  -  ( sourceRect.y + sourceRect.height )  / th ;
 		sourceRect.width = sourceRect.width / tw ;
-		sourceRect.height = sourceRect.height / th ;	
+		sourceRect.height = sourceRect.height / th ;
 
 		GUI.DrawTextureWithTexCoords ( position , WebTexture , sourceRect ,  alphaBlend );
 	}
@@ -689,7 +693,7 @@ public class UWKWebView : MonoBehaviour
     {
         // Default handler loads in this view
 
-        LoadURL(url);   
+        LoadURL(url);
 
     }
 
@@ -719,7 +723,7 @@ public class UWKWebView : MonoBehaviour
     /// <summary>
     /// Initializes the UWKWebView, registers default delagates, and creates textures for the page and icon
     /// to lack of constructor parameters
-    /// </summary>    
+    /// </summary>
     void Awake()
     {
         // ensure core is up
@@ -778,18 +782,18 @@ public class UWKWebView : MonoBehaviour
         WebTexture.SetPixels32(colors);
         WebTexture.Apply();
 
-        ID = UWKCore.CreateView(this, MaxWidth, MaxHeight, "", WebTexture.GetNativeTexturePtr());      
+        ID = UWKCore.CreateView(this, MaxWidth, MaxHeight, "", WebTexture.GetNativeTexturePtr());
 
-    }   
+    }
 
     void Start()
     {
-        
-        if (CurrentWidth != MaxWidth || CurrentHeight != MaxHeight) 
+
+        if (CurrentWidth != MaxWidth || CurrentHeight != MaxHeight)
 		{
 			SetCurrentSize (CurrentWidth, CurrentHeight);
 		}
-		else 
+		else
 		{
 			currentWidth = MaxWidth;
 			currentHeight = MaxHeight;
@@ -804,7 +808,7 @@ public class UWKWebView : MonoBehaviour
 		if (CurrentWidth != currentWidth || CurrentHeight != currentHeight)
 			SetCurrentSize (CurrentWidth, CurrentHeight);
 
-		// in case changed, MaxWidth and MaxHeight are defined at creation 
+		// in case changed, MaxWidth and MaxHeight are defined at creation
 		MaxWidth = maxWidth;
 		MaxHeight = maxHeight;
 
@@ -838,65 +842,65 @@ public class UWKWebView : MonoBehaviour
     {
         if (!IMEActive)
             return;
-        
+
         GUI.SetNextControlName ("UWK_IMETextField");
 
         Rect t = new Rect (x + IMEInputRect.x, y + IMEInputRect.y, IMEInputRect.width, IMEInputRect.height);
 
         // GUI.TextField && GUI.PasswordField not returning the IME character with the _ under it
-        
+
         string currentIME = "";
-        
+
         if (IMEInputType != "password")
             currentIME = GUI.TextField (t, IMEText);
         else
             currentIME = GUI.PasswordField (t, IMEText, "*" [0]);
-        
 
-        if (currentIME != IMEText) 
+
+        if (currentIME != IMEText)
         {
             IMEText = currentIME;
             UWKPlugin.SetIMEText(ID, IMEText);
         }
-        
+
         GUI.FocusControl ("UWK_IMETextField");
-                    
-    }    
- 
+
+    }
+
     /// <summary>
     /// Whether the IME input text field is currently active
-    /// </summary>            
+    /// </summary>
     [HideInInspector]
     public bool IMEActive = false;
 
     /// <summary>
     /// The rect of the IME input text field
-    /// </summary>                
+    /// </summary>
     [HideInInspector]
     public Rect IMEInputRect;
 
     /// <summary>
-    /// The current text entry type, "password" will input '*' 
-    /// </summary>            
+    /// The current text entry type, "password" will input '*'
+    /// </summary>
     [HideInInspector]
     public string IMEInputType = "";
 
     /// <summary>
     /// The current text value of the IME text entry field
-    /// </summary>            
+    /// </summary>
     [HideInInspector]
     public string IMEText = "";
 
     #endregion
 
-    #region Private Fields    
+    #region Private Fields
 
     // we need to track mouse states and Unity's OnGUI method method may be called more than once
-    bool[] mouseStates = new bool[3] {false, false, false};    
+    bool[] mouseStates = new bool[3] {false, false, false};
 
     int lastMouseX = -1;
     int lastMouseY = -1;
-	
+
     int contentWidth = 0;
     int contentHeight = 0;
 
