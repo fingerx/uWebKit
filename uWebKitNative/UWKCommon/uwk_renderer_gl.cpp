@@ -94,7 +94,7 @@ void UWKRendererGL::renderToTextureGLCore()
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferID_);
 
     glViewport(0, 0, maxWidth_, maxHeight_);
-    glClearColor(1, 1, 0, 1);
+    glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(shaderProgram_);
@@ -120,12 +120,12 @@ void UWKRendererGL::renderToTextureGLCore()
     verts[3].x = -1;
     verts[3].y = -1;
     verts[4].x = 1;
-    verts[4].y = -1;
+    verts[4].y = 1;
     verts[5].x = 1;
-    verts[5].y = 1;
+    verts[5].y = -1;
 
     verts[3].u = 0;
-    verts[3].v = 0;
+    verts[3].v = maxHeight_;
     verts[4].u = maxWidth_;
     verts[4].v = 0;
     verts[5].u = maxWidth_;
@@ -146,8 +146,7 @@ void UWKRendererGL::renderToTextureGLCore()
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
-    glDisable(GL_TEXTURE_RECTANGLE_ARB);
+    glBindTexture(GL_TEXTURE_RECTANGLE, 0);
 
     // Render to the screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -392,8 +391,18 @@ UWKRendererGL::~UWKRendererGL()
         // this must be called on the main thread
         glDeleteFramebuffers(1, &framebufferID_);
         glDeleteTextures(1, &surfaceTextureID_);
+
+        if (glCore_)
+        {
+            glDeleteProgram(shaderProgram_);
+            glDeleteShader(vertexShader_);
+            glDeleteShader(fragmentShader_);
+            glDeleteBuffers(1, &arrayBuffer_);
+
+        }
     }
 
+    //glCore_ = false;
     valid_ = false;
 
 }
