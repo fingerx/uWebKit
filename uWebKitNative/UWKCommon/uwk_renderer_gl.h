@@ -1,9 +1,9 @@
 /******************************************
-  * uWebKit 
+  * uWebKit
   * (c) 2014 THUNDERBEAST GAMES, LLC
   * website: http://www.uwebkit.com email: sales@uwebkit.com
   * Usage of this source code requires a uWebKit Source License
-  * Please see UWEBKIT_SOURCE_LICENSE.txt in the root folder 
+  * Please see UWEBKIT_SOURCE_LICENSE.txt in the root folder
   * for details
 *******************************************/
 
@@ -34,14 +34,29 @@ class UWKRendererGL : public UWKRenderer
 
     bool valid_;
 
+    static bool glCore_;
+
+    void renderToTextureGL2();
+    void renderToTextureGLCore();
     void renderToTexture();
+
     bool setupFrameBuffer();
 
     // called from GL thread in Unity
+    void InitInternalGLCore();
     void InitInternal();
 
+    // GLCore
+    GLuint	vertexShader_;
+    GLuint	fragmentShader_;
+    GLuint	shaderProgram_;
+    GLuint	arrayBuffer_;
+
+    int diffMapSamplerIndex_;
 
 public:
+
+    static void SetGLCore(bool value) { glCore_ = value; }
 
     UWKRendererGL(uint32_t maxWidth, uint32_t maxHeight, void* nativeTexturePtr);
     virtual ~UWKRendererGL();

@@ -19,6 +19,10 @@
 #include <d3d11.h>
 #endif
 
+#if SUPPORT_OPENGL
+#include "UWKCommon/uwk_renderer_gl.h"
+#endif
+
 static int g_DeviceType = -1;
 
 // Actual setup/teardown functions defined below
@@ -36,6 +40,15 @@ void EXPORT_API UnitySetGraphicsDevice (void* device, int deviceType, int eventT
 {
     // Set device type to -1, i.e. "not recognized by our plugin"
     g_DeviceType = -1;
+
+#if SUPPORT_OPENGL
+
+    if (deviceType == kUnityGfxRendererOpenGLCore)
+    {
+        UWKRendererGL::SetGLCore(true);
+    }
+
+#endif
 
 #if SUPPORT_D3D9
     // D3D9 device, remember device pointer and device type.
