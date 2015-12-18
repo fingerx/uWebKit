@@ -1,15 +1,83 @@
 /******************************************
-  * uWebKit 
+  * uWebKit
   * (c) 2014 THUNDERBEAST GAMES, LLC
   * website: http://www.uwebkit.com email: sales@uwebkit.com
   * Usage of this source code requires a uWebKit Source License
-  * Please see UWEBKIT_SOURCE_LICENSE.txt in the root folder 
+  * Please see UWEBKIT_SOURCE_LICENSE.txt in the root folder
   * for details
 *******************************************/
-
-#include <OpenGL/OpenGL.h>
+#include "ThirdParty/glew/glew.h"
+#include <OpenGL/CGLCurrent.h>
+#include <OpenGL/CGLIOSurface.h>
 #include "uwk_renderer_gl.h"
 #include "uwk_browser.h"
+
+bool UWKRendererGL::glCore_ = false;
+bool UWKRendererGL::glewInitialized_ = false;
+
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
+
+
+static const char* kGlesVProgTextGLCore = "#version 150\n" \
+    "in highp vec3 pos;\n"\
+    "in highp vec2 uv;\n"\
+    "in lowp  vec4 color;\n"\
+    "out highp vec2 vTexCoord;\n"\
+    "out lowp vec4 vColor;\n"\
+    "\n"\
+    "void main()\n" \
+    "{\n"	\
+    "	gl_Position = vec4(pos,1);\n"	\
+    "	vTexCoord = uv;\n"	\
+    "	vColor = color;\n"	\
+    "}\n" \
+    ;
+
+static const char* kGlesFShaderTextGLCore = "#version 150\n" \
+    "uniform sampler2DRect sDiffmap;\n" \
+    "out lowp vec4 fragColor;\n"\
+    "in highp vec2 vTexCoord;\n"\
+    "in lowp vec4 vColor;\n"\
+    "\n"\
+    "void main()\n" \
+    "{\n"	\
+     "  vec4 diffInput = texture(sDiffmap, vTexCoord);\n" \
+     "	fragColor = diffInput * vColor;\n"	\
+    "}\n" \
+    ;
+
+
+struct uWebkitVertex {
+    float x, y, z;
+    float u, v;
+    unsigned int color;
+};
+
+enum
+{
+    ATTRIB_POSITION = 0,
+    ATTRIB_UV = 1,
+    ATTRIB_COLOR = 2
+};
+
+static float identityMatrix[16] = {
+    1,0,0,0,
+    0,1,0,0,
+    0,0,1,0,
+    0,0,0,1,
+};
+
+static uWebkitVertex verts[6] = {
+
+    { -1, -1, 0, 0, 0, 0xFFffffff },
+    {  1, 1,  0, 1, 0, 0xFFffffff },
+    { -1, 1,  0, 0, 1, 0xFFffffff },
+
+    {  1, 1,  0, 0, 0,  0xFFffffff },
+    {  1, -1,  0, 1, 0, 0xFFffffff },
+    { -1, 1,   0, 0, 1, 0xFFffffff }
+
+};
 
 
 UWKRendererGL::UWKRendererGL(uint32_t maxWidth, uint32_t maxHeight, void *nativeTexturePtr) :
@@ -19,7 +87,82 @@ UWKRendererGL::UWKRendererGL(uint32_t maxWidth, uint32_t maxHeight, void *native
 
 }
 
+void UWKRendererGL::renderToTextureGLCore()
+{
+    if (!valid_)
+        return;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferID_);
+
+    glViewport(0, 0, maxWidth_, maxHeight_);
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glUseProgram(shaderProgram_);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_RECTANGLE, surfaceTextureID_);
+    glUniform1i(diffMapSamplerIndex_, 0);
+
+    verts[0].x = -1;
+    verts[0].y = 1;
+    verts[1].x = 1;
+    verts[1].y = 1;
+    verts[2].x = -1;
+    verts[2].y = -1;
+
+    verts[0].u = 0;
+    verts[0].v = 0;
+    verts[1].u = maxWidth_;
+    verts[1].v = 0;
+    verts[2].u = 0;
+    verts[2].v = maxHeight_;
+
+    verts[3].x = -1;
+    verts[3].y = -1;
+    verts[4].x = 1;
+    verts[4].y = 1;
+    verts[5].x = 1;
+    verts[5].y = -1;
+
+    verts[3].u = 0;
+    verts[3].v = maxHeight_;
+    verts[4].u = maxWidth_;
+    verts[4].v = 0;
+    verts[5].u = maxWidth_;
+    verts[5].v = maxHeight_;
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, arrayBuffer_);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(uWebkitVertex) * 6, &verts[0].x);
+
+    glEnableVertexAttribArray(ATTRIB_POSITION);
+    glVertexAttribPointer(ATTRIB_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(uWebkitVertex), BUFFER_OFFSET(0));
+
+    glEnableVertexAttribArray(ATTRIB_UV);
+    glVertexAttribPointer(ATTRIB_UV, 2, GL_FLOAT, GL_FALSE, sizeof(uWebkitVertex), BUFFER_OFFSET(sizeof(float) * 3));
+
+    glEnableVertexAttribArray(ATTRIB_COLOR);
+    glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(uWebkitVertex), BUFFER_OFFSET(sizeof(float) * 5));
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glBindTexture(GL_TEXTURE_RECTANGLE, 0);
+
+    // Render to the screen
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
 void UWKRendererGL::renderToTexture()
+{
+    if (glCore_)
+        renderToTextureGLCore();
+    else
+        renderToTextureGL2();
+}
+
+void UWKRendererGL::renderToTextureGL2()
 {
     if (!valid_)
         return;
@@ -44,7 +187,6 @@ void UWKRendererGL::renderToTexture()
     glEnable(GL_TEXTURE_RECTANGLE_ARB);
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, surfaceTextureID_);
-
 
     glViewport(0, 0, maxWidth_, maxHeight_);
     glClearColor(0, 0, 0, 0);
@@ -141,8 +283,64 @@ bool UWKRendererGL::setupFrameBuffer()
     return true;
 }
 
+void UWKRendererGL::InitInternalGLCore()
+{
+
+    glGetError();
+
+    vertexShader_ = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader_, 1, &kGlesVProgTextGLCore, NULL);
+    glCompileShader(vertexShader_);
+
+    GLenum error = glGetError();
+
+    fragmentShader_ = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader_, 1, &kGlesFShaderTextGLCore, NULL);
+    glCompileShader(fragmentShader_);
+
+    error = glGetError();
+
+    glGenBuffers(1, &arrayBuffer_);
+    glBindBuffer(GL_ARRAY_BUFFER, arrayBuffer_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(uWebkitVertex) * 6, NULL, GL_STREAM_DRAW);
+
+    shaderProgram_ = glCreateProgram();
+    glBindAttribLocation(shaderProgram_, ATTRIB_POSITION, "pos");
+    glBindAttribLocation(shaderProgram_, ATTRIB_COLOR, "color");
+    glBindAttribLocation(shaderProgram_, ATTRIB_UV, "uv");
+    glAttachShader(shaderProgram_, vertexShader_);
+    glAttachShader(shaderProgram_, fragmentShader_);
+
+    glBindFragDataLocation(shaderProgram_, 0, "fragColor");
+
+    error = glGetError();
+
+    glLinkProgram(shaderProgram_);
+
+    error = glGetError();
+
+    GLint status = 0;
+    glGetProgramiv(shaderProgram_, GL_LINK_STATUS, &status);
+    //assert(status == GL_TRUE);
+
+    error = glGetError();
+
+    glUseProgram(shaderProgram_);
+    diffMapSamplerIndex_ =  glGetUniformLocation(shaderProgram_, "sDiffmap");
+    glUseProgram(0);
+
+}
+
 void UWKRendererGL::InitInternal()
 {
+    if (!glewInitialized_)
+    {
+        glewExperimental = GL_TRUE;
+        glewInit();
+        glGetError(); // Clean up error generated by glewInit
+        glewInitialized_ = true;
+    }
+
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
 
@@ -174,6 +372,9 @@ void UWKRendererGL::InitInternal()
     glPopClientAttrib();
     glPopAttrib();
 
+    if (glCore_)
+        InitInternalGLCore();
+
     // mark as valid
     valid_ = true;
 }
@@ -195,8 +396,18 @@ UWKRendererGL::~UWKRendererGL()
         // this must be called on the main thread
         glDeleteFramebuffers(1, &framebufferID_);
         glDeleteTextures(1, &surfaceTextureID_);
+
+        if (glCore_)
+        {
+            glDeleteProgram(shaderProgram_);
+            glDeleteShader(vertexShader_);
+            glDeleteShader(fragmentShader_);
+            glDeleteBuffers(1, &arrayBuffer_);
+
+        }
     }
 
+    //glCore_ = false;
     valid_ = false;
 
 }
