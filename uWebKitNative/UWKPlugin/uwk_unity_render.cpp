@@ -47,6 +47,10 @@ void EXPORT_API UnitySetGraphicsDevice (void* device, int deviceType, int eventT
     {
         UWKRendererGL::SetGLCore(true);
     }
+    else if (deviceType == kUnityGfxRendererOpenGL)
+    {
+        UWKRendererGL::SetGLCore(false);
+    }
 
 #endif
 

@@ -35,6 +35,7 @@ class UWKRendererGL : public UWKRenderer
     bool valid_;
 
     static bool glCore_;
+    static bool glewInitialized_;
 
     void renderToTextureGL2();
     void renderToTextureGLCore();
